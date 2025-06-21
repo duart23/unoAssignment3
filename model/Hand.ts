@@ -1,50 +1,27 @@
-import { Color, ICard, IDeck, Type } from "./Deck";
-import { Player} from "./Game";
-
-export interface IHand {
-  currentPlayerIndex: number;
-  deck: IDeck;
-  discardPile: ICard[];
-  direction: 1 | -1; // 1 for clockwise, -1 for counter-clockwise
-
-  // Starts a new Hand with the given players
-  startHand(players: Player[], deck: IDeck): void;
-
-  // Plays a card from the current player's hand
-  playCard(card: ICard, player: Player): void;
-
-  nextPlayer(): void;
-
-  applyCardEffect(card: ICard, chosenColor?: Color): void;
-
-  pickColor(chosenColor: Color): void;
-
-  reverseDirection(): void;
-
-  calculatePlayerHandScore(player: Player): number;
-
-  // Draws a card for the current player
-  drawCard(playerIndex: number): void;
-
-}
+import { ICard, IDeck, Color, Type } from "../interfaces/IDeck";
+import { IHand } from "../interfaces/IHand";
+import { IGame, Player } from "../interfaces/IGame";
 
 class Hand implements IHand {
   card: ICard;
-  players: Player[]
+  players: Player[];
   currentPlayerIndex: number;
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1;
+  game: IGame;
 
-   constructor(players: Player[], deck: IDeck) {
+  constructor(players: Player[], deck: IDeck, game: IGame) {
     this.players = players;
     this.deck = deck;
+    this.game = game;
   }
 
   startHand(players: Player[], deck: IDeck): void {
     //Define inital scores
     players.forEach((player) => {
       player.score = 0;
+      player.hasCalledUno = false;
     });
 
     deck.initializeDeck();
@@ -75,7 +52,10 @@ class Hand implements IHand {
   }
 
   playCard(card: ICard, player: Player): void {
-    if (this.currentPlayerIndex !== this.players.findIndex(p => p.name === player.name)) {
+    if (
+      this.currentPlayerIndex !==
+      this.players.findIndex((p) => p.name === player.name)
+    ) {
       throw new Error("It's not your turn!");
     }
 
@@ -83,14 +63,27 @@ class Hand implements IHand {
       !(
         card.color === this.discardPile[this.discardPile.length - 1].color ||
         card.type === this.discardPile[this.discardPile.length - 1].type ||
-        (card.color === "black" &&
-          this.discardPile[this.discardPile.length - 1].color !== "black")
+        card.color === "black"
       )
     ) {
       throw new Error("You cannot play this card!");
     }
 
+    //Put card in the discarc pile and remove it from the player's hand
     this.discardPile.push(card);
+    player.playerHand = player.playerHand.filter((c) => c !== card);
+
+    if (player.playerHand.length === 0) {
+      this.game.endHand(player); // call back into Game
+      return;
+    }
+
+    this.checkUno(player);
+
+    //Apply effects
+    this.applyCardEffect(card);
+
+    this.nextPlayer();
   }
 
   applyCardEffect(card: ICard, chosenColor?: Color): void {
@@ -106,9 +99,15 @@ class Hand implements IHand {
         this.drawCard(nextPlayerIndex);
       }
     } else if (card.type === Type.WILD) {
+      if (!chosenColor) {
+        throw new Error("You must pick a color for a wild card!");
+      }
       this.pickColor(chosenColor!);
     } else if (card.type === Type.WILD_DRAW_FOUR) {
-      this.pickColor(chosenColor!);
+      if (!chosenColor) {
+        throw new Error("You must pick a color for a wild card!");
+      }
+      this.pickColor(chosenColor);
       const nextPlayerIndex =
         (this.currentPlayerIndex + this.direction + this.players.length) %
         this.players.length;
@@ -171,5 +170,21 @@ class Hand implements IHand {
     player.score = newScore;
   }
 
- 
+  callUno(player: Player): void {
+    if(this.currentPlayerIndex !==
+      this.players.findIndex((p) => p.name === player.name)){
+        throw new Error("It's not your turn to call Uno!");
+      } else if (player.playerHand.length > 2) {
+        throw new Error("You cannot call Uno with more than 2 cards in hand!");
+      } else player.hasCalledUno = true;
+  }
+
+  checkUno(player: Player): void {
+    if (!player.hasCalledUno) {
+      for (let i = 0; i < 4; i++) {
+        player.playerHand.push(this.deck.dealCard());
+      }
+    }
+    player.hasCalledUno = false;
+  }
 }

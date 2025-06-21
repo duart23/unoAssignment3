@@ -1,70 +1,61 @@
-import { Color, ICard, IDeck, Type } from "./Deck";
-import { IHand } from "./Hand";
-
-export interface Player {
-  name: string;
-  playerHand: ICard[];
-  score: number;
-}
-  
-export interface IGame {
-  players: Player[];
-  gameId: number;
-  currentHand: IHand;
-
-
-  createGame(players: Player[]): void;
-  joinGame(gameId: number,  player: Player): void;
-  startGame(gameId: number): void;
-  checkWinner(): boolean;
-  calculateTotalPlayerScore(player: Player): void;
-}
+import { IGame, Player } from "../interfaces/IGame";
+import { IHand } from "../interfaces/IHand";
 
 class Game implements IGame {
   players: Player[];
   gameId: number;
   currentHand: IHand;
+  winner?: Player;
 
   constructor(players: Player[], currentHand: IHand, gameId: number) {
-this.players = players;
-  this.currentHand = currentHand;
-  this.gameId = gameId;
+    this.players = players;
+    this.currentHand = currentHand;
+    this.gameId = gameId;
   }
 
-
-createGame(players: Player[]): void {
-    this.players = players;     
+  createGame(players: Player[]): void {
+    this.players = players;
   }
 
   joinGame(gameId: number, player: Player): void {
-      if(!gameId){
-        throw new Error("Game does not exist!")
-      }
+    if (!gameId) {
+      throw new Error("Game does not exist!");
+    }
     this.players.push(player);
-
-
   }
+
   startGame(gameId: number): void {
-      throw new Error("Method not implemented.");
+    if (!gameId) {
+      throw new Error("Game does not exist!");
+    }
+    if (this.players.length < 2) {
+      throw new Error("Not enough players to start the game!");
+    }
+    this.currentHand.startHand(this.players, this.currentHand.deck);
   }
-  checkWinner(): boolean {
-    this.players.find((player) => {
-      if (player.score >= 500) {
-        console.log(`${player.name} wins with a score of ${player.score}!`);
-        return true;
-      }
-    });
+
+  endHand(winningPlayer: Player): void {
+    this.currentHand.calculateTotalPlayerScore(winningPlayer);
+
+    const isGameOver = this.checkGameWinner(winningPlayer);
+    if (isGameOver) {
+      console.log(
+        `${winningPlayer.name} wins the game with ${winningPlayer.score} points!`
+      );
+      return;
+    }
+
+    console.log("Starting a new hand...");
+     this.currentHand.deck.cards = [];
+    this.currentHand.discardPile = []; 
+    this.currentHand.startHand(this.players, this.currentHand.deck);
+  }
+
+  checkGameWinner(player: Player): boolean {
+    if (player.score >= 500) {
+      console.log(`${player.name} wins with a score of ${player.score}!`);
+      return true;
+    }
     return false;
-  }
-
-  // Calculate the total score for a player based on the other players' hands
-  calculateTotalPlayerScore(player: Player): void {
-    let newScore = player.score || 0;
-    this.players.forEach((p) => {
-      if (player.playerHand.length === 0) return;
-      newScore += this.currentHand.calculatePlayerHandScore(p);
-    });
-
-    player.score = newScore;
   }
 }
