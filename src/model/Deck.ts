@@ -1,4 +1,4 @@
-import { IDeck, ICard, Color, Type } from '../interfaces/IDeck';
+import { IDeck, ICard, Color, Type } from '../../interfaces/IDeck';
 
 class Deck implements IDeck {
   cards: ICard[] = [];

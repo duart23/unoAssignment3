@@ -1,5 +1,5 @@
-import { IGame, Player } from "../interfaces/IGame";
-import { IHand } from "../interfaces/IHand";
+import { IGame, Player } from "../../interfaces/IGame";
+import { IHand } from "../../interfaces/IHand";
 
 class Game implements IGame {
   players: Player[];

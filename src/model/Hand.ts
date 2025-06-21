@@ -1,6 +1,6 @@
-import { ICard, IDeck, Color, Type } from "../interfaces/IDeck";
-import { IHand } from "../interfaces/IHand";
-import { IGame, Player } from "../interfaces/IGame";
+import { ICard, IDeck, Color, Type } from "../../interfaces/IDeck";
+import { IHand } from "../../interfaces/IHand";
+import { IGame, Player } from "../../interfaces/IGame";
 
 class Hand implements IHand {
   card: ICard;
