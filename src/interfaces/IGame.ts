@@ -3,18 +3,19 @@ import { IHand } from "../interfaces/IHand";
 
 export interface Player {
   name: string;
-  playerHand: ICard[];
+  playerHand?: ICard[];
   score: number;
   hasCalledUno: boolean;
+  isBot? : boolean;
 }
   
 export interface IGame {
   players: Player[];
   gameId: number;
-  currentHand: IHand;
+  currentHand?: IHand;
   winner?: Player;
 
-  createGame(players: Player[]): void;
+  createGame(players: Player[], gameId: number): IGame;
 
   joinGame(gameId: number,  player: Player): void;
 
@@ -22,7 +23,7 @@ export interface IGame {
 
   checkGameWinner(player: Player): boolean;
 
-  endHand(winningPlayer: Player): void;
+  endHand(winningPlayer: Player): boolean;
 
 
 }

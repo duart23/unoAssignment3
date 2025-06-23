@@ -2,17 +2,18 @@ import { Color, ICard, IDeck, Type } from "../interfaces/IDeck";
 import { IGame, Player} from "../interfaces/IGame";    
 
 export interface IHand {
-  currentPlayerIndex: number;
-  deck: IDeck;
-  discardPile: ICard[];
-  direction: 1 | -1; // 1 for clockwise, -1 for counter-clockwise
-  game: IGame;
+  card?: ICard | undefined;
+  currentPlayerIndex: number | undefined;
+  deck: IDeck | undefined;
+  discardPile: ICard[] | undefined;
+  direction: 1 | -1 | undefined; // 1 for clockwise, -1 for counter-clockwise
+  game?: IGame | undefined; // Reference to the game this hand belongs to
 
   // Starts a new Hand with the given players
-  startHand(players: Player[], deck: IDeck): void;
+  startHand(players: Player[]): void;
 
   // Plays a card from the current player's hand
-  playCard(card: ICard, player: Player): void;
+  playCard(card: ICard, player: Player, chosenColor?: Color): void;
 
   nextPlayer(): void;
 
@@ -27,7 +28,7 @@ export interface IHand {
   calculateTotalPlayerScore(player: Player): void;
 
   // Draws a card for the current player
-  drawCard(playerIndex: number): void;
+  drawCard(palyer: Player): void;
   
   callUno(player: Player): void;
 

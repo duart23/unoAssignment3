@@ -1,20 +1,20 @@
-import { IGame, Player } from "../../interfaces/IGame";
-import { IHand } from "../../interfaces/IHand";
+import { IGame, Player } from "@/interfaces/IGame";
+import { IHand } from "@/interfaces/IHand";
 
-class Game implements IGame {
+export class Game implements IGame {
   players: Player[];
   gameId: number;
-  currentHand: IHand;
+  currentHand?: IHand;
   winner?: Player;
 
-  constructor(players: Player[], currentHand: IHand, gameId: number) {
+  constructor(players: Player[], gameId: number, currentHand?: IHand) {
     this.players = players;
-    this.currentHand = currentHand;
     this.gameId = gameId;
+    this.currentHand = undefined;
   }
 
-  createGame(players: Player[]): void {
-    this.players = players;
+  createGame(players: Player[], gameId: number): IGame {
+    return new Game(players, gameId);
   }
 
   joinGame(gameId: number, player: Player): void {
@@ -31,10 +31,14 @@ class Game implements IGame {
     if (this.players.length < 2) {
       throw new Error("Not enough players to start the game!");
     }
-    this.currentHand.startHand(this.players, this.currentHand.deck);
+    this.currentHand?.startHand(this.players);
   }
 
-  endHand(winningPlayer: Player): void {
+  endHand(winningPlayer: Player): boolean {
+    if (!this.currentHand) {
+      throw new Error("No current hand to end.");
+    }
+
     this.currentHand.calculateTotalPlayerScore(winningPlayer);
 
     const isGameOver = this.checkGameWinner(winningPlayer);
@@ -42,13 +46,13 @@ class Game implements IGame {
       console.log(
         `${winningPlayer.name} wins the game with ${winningPlayer.score} points!`
       );
-      return;
+      return isGameOver;
     }
 
     console.log("Starting a new hand...");
-     this.currentHand.deck.cards = [];
     this.currentHand.discardPile = []; 
-    this.currentHand.startHand(this.players, this.currentHand.deck);
+    this.currentHand.startHand(this.players);
+    return false;
   }
 
   checkGameWinner(player: Player): boolean {
