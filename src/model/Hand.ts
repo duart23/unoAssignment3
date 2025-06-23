@@ -7,7 +7,7 @@ export class Hand implements IHand {
   card?: ICard;
   players: Player[];
   currentPlayerIndex: number;
-  deck: IDeck;
+  deck: IDeck ;
   discardPile: ICard[];
   direction: 1 | -1;
   game?: IGame;
@@ -16,41 +16,34 @@ export class Hand implements IHand {
     players: Player[],
     deck?: IDeck,
     card?: ICard,
-    currentPlayerIndex?: number,
-    discardPile?: ICard[],
-    direction?: 1 | -1,
     game?: IGame
   ) {
     this.card = card;
     this.players = players;
     this.game = game;
     this.deck = deck ?? new Deck();
-    this.currentPlayerIndex = 0;
+    this.currentPlayerIndex =  0;
     this.discardPile = [];
     this.direction = 1;
   }
 
   startHand(players: Player[]): void {
     //Define inital scores
-    players.forEach((player) => {
-      player.score = 0;
-      player.hasCalledUno = false;
-    });
-
-    const deck = new Deck();
-    deck.initializeDeck();
-    deck.shuffleDeck();
+    this.deck = new Deck();
+    
+    this.deck.initializeDeck();
+    this.deck.shuffleDeck();
     this.direction = 1;
 
     for (let i = 0; i < 7; i++) {
       players.forEach((player) => {
-        player.playerHand?.push(deck.dealCard());
+        player.playerHand?.push(this.deck.dealCard());
       });
     }
 
     //First card on the discard pile
     do {
-      this.discardPile.push(deck.dealCard());
+      this.discardPile.push(this.deck.dealCard());
       if (
         this.discardPile[0].type === "wild" ||
         this.discardPile[0].type === "wild_draw_four"
@@ -117,11 +110,11 @@ export class Hand implements IHand {
     } else if (card.type === Type.WILD) {
       if (chosenColor) {
         this.pickColor(chosenColor);
-      } 
+      }
     } else if (card.type === Type.WILD_DRAW_FOUR) {
       if (chosenColor) {
         this.pickColor(chosenColor);
-      } 
+      }
       const nextPlayer =
         this.players[
           (this.currentPlayerIndex + this.direction + this.players.length) %

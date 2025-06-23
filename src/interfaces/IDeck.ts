@@ -24,7 +24,7 @@ export interface ICard {
 export interface IDeck {
   cards: ICard[];
   // Initializes the deck with a standard set of Uno cards
-  initializeDeck(): ICard[];
+  initializeDeck(): void;
 
   // Shuffles the deck randomly
   shuffleDeck(): void;

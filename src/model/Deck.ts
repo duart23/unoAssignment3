@@ -3,33 +3,31 @@ import { IDeck, ICard, Color, Type } from '@/interfaces/IDeck';
 export class Deck implements IDeck {
   cards: ICard[] = [];
 
-  initializeDeck(): ICard[] {
+  initializeDeck(): void {
     const colors: Color[] = [Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW];
-    const cards: ICard[] = [];
+    this.cards = [];
 
     colors.forEach((color) => {
       for (let i = 0; i <= 9; i++) {
-        cards.push({ color, type: Type.NUMBER, value: i });
+        this.cards.push({ color, type: Type.NUMBER, value: i });
         if (i > 0) {
-          cards.push({ color, type: Type.NUMBER, value: i });
+          this.cards.push({ color, type: Type.NUMBER, value: i });
         }
       }
     });
 
     colors.forEach((color) => {
       for (let i = 0; i < 2; i++) {
-        cards.push({ color, type: Type.SKIP });
-        cards.push({ color, type: Type.REVERSE });
-        cards.push({ color, type: Type.DRAW_TWO });
+        this.cards.push({ color, type: Type.SKIP });
+        this.cards.push({ color, type: Type.REVERSE });
+        this.cards.push({ color, type: Type.DRAW_TWO });
       }
     });
 
     for (let i = 0; i < 4; i++) {
-      cards.push({ color: Color.BLACK, type: Type.WILD });
-      cards.push({ color: Color.BLACK, type: Type.WILD_DRAW_FOUR });
+      this.cards.push({ color: Color.BLACK, type: Type.WILD });
+      this.cards.push({ color: Color.BLACK, type: Type.WILD_DRAW_FOUR });
     }
-
-    return cards;
   }
 
   shuffleDeck(): void {

@@ -3,11 +3,11 @@ import { IGame, Player} from "../interfaces/IGame";
 
 export interface IHand {
   card?: ICard | undefined;
-  currentPlayerIndex: number | undefined;
-  deck: IDeck | undefined;
-  discardPile: ICard[] | undefined;
-  direction: 1 | -1 | undefined; // 1 for clockwise, -1 for counter-clockwise
-  game?: IGame | undefined; // Reference to the game this hand belongs to
+  currentPlayerIndex: number;
+  deck: IDeck;
+  discardPile: ICard[];
+  direction: 1 | -1 ; // 1 for clockwise, -1 for counter-clockwise
+  game?: IGame; // Reference to the game this hand belongs to
 
   // Starts a new Hand with the given players
   startHand(players: Player[]): void;

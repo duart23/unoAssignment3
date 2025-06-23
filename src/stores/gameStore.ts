@@ -1,13 +1,11 @@
 import { defineStore } from "pinia";
 import { IGame, Player } from "@/interfaces/IGame";
-import { IHand} from "@/interfaces/IHand";
 import { Hand } from "@/model/Hand";
 import { Game } from "@/model/Game";
 
 export const useGameStore = defineStore("game", {
   state: () => ({
     winner: null as Player | null,
-    currentHand: null as IHand | null,
     isGameOver: false as boolean,
     game: null as IGame | null,
   }),
@@ -29,9 +27,9 @@ export const useGameStore = defineStore("game", {
       if (players.length < 2) {
         throw new Error("Not enough players to start the game!");
       }
-      if (gameId) {
-        this.currentHand = new Hand(players);
-        this.currentHand.startHand(players);
+      if (this.game) {
+        this.game.currentHand = new Hand(players);
+        this.game.currentHand.startHand(players);
       }
     },
     

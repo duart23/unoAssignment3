@@ -12,7 +12,7 @@ export interface Player {
 export interface IGame {
   players: Player[];
   gameId: number;
-  currentHand?: IHand;
+  currentHand: IHand | null;
   winner?: Player;
 
   createGame(players: Player[], gameId: number): IGame;

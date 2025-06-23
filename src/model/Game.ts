@@ -4,13 +4,13 @@ import { IHand } from "@/interfaces/IHand";
 export class Game implements IGame {
   players: Player[];
   gameId: number;
-  currentHand?: IHand;
+  currentHand: IHand | null = null;
   winner?: Player;
 
-  constructor(players: Player[], gameId: number, currentHand?: IHand) {
+
+  constructor(players: Player[], gameId: number) {
     this.players = players;
     this.gameId = gameId;
-    this.currentHand = undefined;
   }
 
   createGame(players: Player[], gameId: number): IGame {
