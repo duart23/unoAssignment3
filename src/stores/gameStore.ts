@@ -33,8 +33,8 @@ export const useGameStore = defineStore("game", {
       }
     },
     
-    endGame(): void {
-      
+    endGame(player: Player): void {
+      this.game?.endHand(player);
     },
   },
 });

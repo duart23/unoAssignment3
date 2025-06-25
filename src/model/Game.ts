@@ -40,6 +40,7 @@ export class Game implements IGame {
     }
 
     this.currentHand.calculateTotalPlayerScore(winningPlayer);
+    console.log(winningPlayer.score);
 
     const isGameOver = this.checkGameWinner(winningPlayer);
     if (isGameOver) {
@@ -49,7 +50,6 @@ export class Game implements IGame {
       return isGameOver;
     }
 
-    console.log("Starting a new hand...");
     this.currentHand.discardPile = []; 
     this.currentHand.startHand(this.players);
     return false;

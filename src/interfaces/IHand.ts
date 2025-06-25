@@ -1,3 +1,4 @@
+import { Bot } from "@/model/Bot";
 import { Color, ICard, IDeck, Type } from "../interfaces/IDeck";
 import { IGame, Player} from "../interfaces/IGame";    
 
@@ -8,12 +9,13 @@ export interface IHand {
   discardPile: ICard[];
   direction: 1 | -1 ; // 1 for clockwise, -1 for counter-clockwise
   game?: IGame; // Reference to the game this hand belongs to
+  bot?: Bot; // Reference to a bot player if applicable
 
   // Starts a new Hand with the given players
   startHand(players: Player[]): void;
 
   // Plays a card from the current player's hand
-  playCard(card: ICard, player: Player, chosenColor?: Color): void;
+  playCard(card: ICard, player: Player, chosenColor?: Color): boolean;
 
   nextPlayer(): void;
 
@@ -33,6 +35,8 @@ export interface IHand {
   callUno(player: Player): void;
 
   checkUno(player: Player): void;
+
+  botTakeTurn(): void;
 
 
 }

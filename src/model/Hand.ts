@@ -1,28 +1,25 @@
 import { ICard, IDeck, Color, Type } from "@/interfaces/IDeck";
 import { IHand } from "@/interfaces/IHand";
 import { IGame, Player } from "@/interfaces/IGame";
-import { Deck } from "@/model/Deck";
+import { Deck } from "./Deck";
+import { Bot } from "./Bot";
 
 export class Hand implements IHand {
   card?: ICard;
   players: Player[];
   currentPlayerIndex: number;
-  deck: IDeck ;
+  deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1;
   game?: IGame;
+  bot?: Bot;
 
-  constructor(
-    players: Player[],
-    deck?: IDeck,
-    card?: ICard,
-    game?: IGame
-  ) {
+  constructor(players: Player[], deck?: IDeck, card?: ICard, game?: IGame) {
     this.card = card;
     this.players = players;
     this.game = game;
     this.deck = deck ?? new Deck();
-    this.currentPlayerIndex =  0;
+    this.currentPlayerIndex = 0;
     this.discardPile = [];
     this.direction = 1;
   }
@@ -30,7 +27,7 @@ export class Hand implements IHand {
   startHand(players: Player[]): void {
     //Define inital scores
     this.deck = new Deck();
-    
+
     this.deck.initializeDeck();
     this.deck.shuffleDeck();
     this.direction = 1;
@@ -58,39 +55,41 @@ export class Hand implements IHand {
     this.currentPlayerIndex = Math.floor(Math.random() * players.length);
   }
 
-  playCard(card: ICard, player: Player, chosenColor?: Color): void {
+  playCard(card: ICard, player: Player, chosenColor?: Color): boolean {
     if (
       this.currentPlayerIndex !==
       this.players.findIndex((p) => p.name === player.name)
     ) {
-      throw new Error("It's not your turn!");
+      return false;
     }
+
+    const topCard = this.discardPile[this.discardPile.length - 1];
 
     if (
-      !(
-        card.color === this.discardPile[this.discardPile.length - 1].color ||
-        card.type === this.discardPile[this.discardPile.length - 1].type ||
-        card.color === "black"
-      )
+      card.color === topCard.color ||
+      card.value === topCard.value ||
+      (card.type === Type.DRAW_TWO && topCard.type === Type.DRAW_TWO) ||
+      (card.type === Type.REVERSE && topCard.type === Type.REVERSE) ||
+      (card.type === Type.SKIP && topCard.type === Type.SKIP) ||
+      card.type === Type.WILD ||
+      card.type === Type.WILD_DRAW_FOUR
     ) {
-      throw new Error("You cannot play this card!");
+      this.discardPile.push(card);
+      player.playerHand = player.playerHand?.filter((c) => c !== card);
+    } else {
+      return false;
     }
 
-    //Put card in the discard pile and remove it from the player's hand
-    this.discardPile.push(card);
-    player.playerHand = player.playerHand?.filter((c) => c !== card);
-
-    if (player.playerHand?.length === 0) {
-      this.game?.endHand(player); // call back into Game
-      return;
-    }
+    return true;
   }
 
   applyCardEffect(card: ICard, chosenColor?: Color): void {
     if (card.type === Type.SKIP) {
       this.nextPlayer();
+      return;
     } else if (card.type === Type.REVERSE) {
       this.reverseDirection;
+      return;
     } else if (card.type === Type.DRAW_TWO) {
       const nextPlayer =
         this.players[
@@ -99,14 +98,17 @@ export class Hand implements IHand {
         ];
       for (let i = 0; i < 2; i++) {
         this.drawCard(nextPlayer);
+        return;
       }
     } else if (card.type === Type.WILD) {
       if (chosenColor) {
         this.pickColor(chosenColor);
+        return;
       }
     } else if (card.type === Type.WILD_DRAW_FOUR) {
       if (chosenColor) {
         this.pickColor(chosenColor);
+        return;
       }
       const nextPlayer =
         this.players[
@@ -115,6 +117,7 @@ export class Hand implements IHand {
         ];
       for (let i = 0; i < 4; i++) {
         this.drawCard(nextPlayer);
+        return;
       }
     }
   }
@@ -142,7 +145,8 @@ export class Hand implements IHand {
     ) {
       throw new Error("It's not your turn!");
     } else {
-    player.playerHand?.push(this.deck.dealCard());}
+      player.playerHand?.push(this.deck.dealCard());
+    }
   }
 
   // Calculate the score of a player's hand
@@ -197,5 +201,12 @@ export class Hand implements IHand {
       }
     }
     player.hasCalledUno = false;
+  }
+
+  botTakeTurn(): void {
+    const currentPlayer = this.players[this.currentPlayerIndex];
+    if (currentPlayer.isBot && currentPlayer instanceof Bot) {
+      currentPlayer.botTakeTurn(); // Call Bot-specific logic
+    }
   }
 }

@@ -1,21 +1,19 @@
 <script lang="ts" setup>
-import { useGameStore } from "@/stores/gameStore";
 import UnoCard from "./UnoCard.vue";
 import { ICard } from "@/interfaces/IDeck";
 
-const gameStore = useGameStore();
-const props = defineProps<{
+const { cards, name } = defineProps<{
   cards: ICard[] | undefined;
-    name?: string;
+  name: string;
 }>();
-
-function handlePlay(card: ICard) {
-    emit('playCard', card);
-}
 
 const emit = defineEmits<{
   (e: 'playCard', card: ICard): void;
 }>();
+
+function handlePlay(card: ICard) {
+  emit('playCard', card);
+}
 </script>
 
 <template>
@@ -26,6 +24,7 @@ const emit = defineEmits<{
       :key="i"
       :card="card"
       @play="handlePlay"
+      
     ></UnoCard>
   </div>
 </template>

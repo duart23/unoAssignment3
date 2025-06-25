@@ -2,18 +2,16 @@
 import type { ICard } from "@/interfaces/IDeck";
 import { Type } from "@/interfaces/IDeck";
 import { defineProps, defineEmits } from "vue";
-
 const props = defineProps<{
   card: ICard;
+}>();
+const emit = defineEmits<{
+  (e: "play", card: ICard): void;
 }>();
 
 function handleClick() {
   emit("play", props.card);
 }
-
-const emit = defineEmits<{
-  (e: "play", card: ICard): void;
-}>();
 </script>
 
 <template>
@@ -28,10 +26,9 @@ const emit = defineEmits<{
       <div v-if="card.type === Type.SKIP" class="cardValue">⦸</div>
       <div v-if="card.type === Type.REVERSE" class="cardValue">↻</div>
       <div v-if="card.type === Type.DRAW_TWO" class="cardValue">
-        <span class="plus-symbol">+</span>2
+        +2
       </div>
-      <div v-if="card.type === Type.WILD_DRAW_FOUR" class="cardValue">
-        <span class="plus-symbol">+</span>4
+      <div v-if="card.type === Type.WILD_DRAW_FOUR" class="cardValue">+4
       </div>
     </div>
   </div>
@@ -59,8 +56,7 @@ const emit = defineEmits<{
 }
 
 .wildCard {
-    width: 100%;
-    
+  width: 100%;
 }
 .unoCard.red {
   background-color: #f11010;

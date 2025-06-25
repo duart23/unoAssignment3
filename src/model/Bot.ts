@@ -1,6 +1,5 @@
 import { IGame, Player } from "@/interfaces/IGame";
 import { ICard, Color, Type } from "@/interfaces/IDeck";
-import { IHand } from "@/interfaces/IHand";
 
 export class Bot implements Player {
   name: string;
@@ -19,9 +18,8 @@ export class Bot implements Player {
     this.isBot = true;
   }
 
-  takeTurn(): void {
-    if (!this.game || !this.game.currentHand) {
-      throw new Error("No current hand to play.");
+  botTakeTurn(): void {
+    if (!this.game || !this.game.currentHand) {      throw new Error("No current hand to play.");
     }
 
     const discardPile = this.game.currentHand.discardPile;
