@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useGameStore } from "@/stores/gameStore";
 import { useRouter } from "vue-router";
 import type { Player } from "@/interfaces/IGame";
+import { Bot } from "@/model/Bot";
 
 const gameStore = useGameStore();
 const router = useRouter();
@@ -12,38 +13,37 @@ const players: Player[] = [];
 
 const nrOfBots = ref(1);
 
-  function createPlayer(name: string) {
-    const player: Player = {
-      name,
+function createPlayer(name: string) {
+  const player: Player = {
+    name,
+    playerHand: [],
+    score: 0,
+    hasCalledUno: false,
+    isBot: false,
+  };
+  players.push(player);
+}
+
+function createBots(nrOfBots: number) {
+  for (let i = 0; i < nrOfBots; i++) {
+    const botName = `Bot ${i + 1}`;
+    const bot: Player = {
+      name: botName,
       playerHand: [],
       score: 0,
       hasCalledUno: false,
-      isBot: false,
+      isBot: true,
     };
-    players.push(player);
+    players.push(bot);
   }
+}
 
-  function createBots(nrOfBots: number) {
-    for (let i = 0; i < nrOfBots; i++) {
-      const botName = `Bot ${i + 1}`;
-      const player: Player = {
-        name: botName,
-        playerHand: [],
-        score: 0,
-        hasCalledUno: false,
-        isBot: true,
-      };
-      players.push(player);
-    }
-  }
-
-  function createGame() {
-    createPlayer(playerName.value)
-    createBots(nrOfBots.value);
-    gameStore.createGame(players);
-    router.push("/game");
-  }
-
+function createGame() {
+  createPlayer(playerName.value);
+  createBots(nrOfBots.value);
+  gameStore.createGame(players);
+  router.push("/game");
+}
 </script>
 
 <template>
@@ -59,6 +59,5 @@ const nrOfBots = ref(1);
     </select>
 
     <Button @click="createGame">Create Game</Button>
-
   </div>
 </template>

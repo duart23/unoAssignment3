@@ -84,13 +84,6 @@ export class Hand implements IHand {
       this.game?.endHand(player); // call back into Game
       return;
     }
-
-    this.checkUno(player);
-
-    //Apply effects
-    this.applyCardEffect(card);
-
-    this.nextPlayer();
   }
 
   applyCardEffect(card: ICard, chosenColor?: Color): void {
@@ -143,7 +136,13 @@ export class Hand implements IHand {
   }
 
   drawCard(player: Player): void {
-    player.playerHand?.push(this.deck.dealCard());
+    if (
+      this.currentPlayerIndex !==
+      this.players.findIndex((p) => p.name === player.name)
+    ) {
+      throw new Error("It's not your turn!");
+    } else {
+    player.playerHand?.push(this.deck.dealCard());}
   }
 
   // Calculate the score of a player's hand
