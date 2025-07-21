@@ -24,6 +24,4 @@ export interface IGame {
   checkGameWinner(player: Player): boolean;
 
   endHand(winningPlayer: Player): boolean;
-
-
 }

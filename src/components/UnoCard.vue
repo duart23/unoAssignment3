@@ -17,8 +17,7 @@ function handleClick() {
 <template>
   <div class="unoCard" :class="card.color.toLowerCase()" @click="handleClick">
     <div class="card">
-      <div v-if="card.type === Type.WILD">
-        <img src="@/assets/WildCard.jpg" alt="wild" class="wildCard" />
+      <div v-if="card.type === Type.WILD" class="cardValue">W
       </div>
       <div v-if="card.type === Type.NUMBER" class="cardValue">
         {{ card.value }}

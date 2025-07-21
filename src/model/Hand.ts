@@ -68,11 +68,13 @@ export class Hand implements IHand {
     if (
       card.color === topCard.color ||
       card.value === topCard.value ||
+
       (card.type === Type.DRAW_TWO && topCard.type === Type.DRAW_TWO) ||
       (card.type === Type.REVERSE && topCard.type === Type.REVERSE) ||
       (card.type === Type.SKIP && topCard.type === Type.SKIP) ||
       card.type === Type.WILD ||
       card.type === Type.WILD_DRAW_FOUR
+      
     ) {
       this.discardPile.push(card);
       player.playerHand = player.playerHand?.filter((c) => c !== card);
@@ -97,8 +99,7 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 2; i++) {
-        this.drawCard(nextPlayer);
-        return;
+        this.penaltyDraw(nextPlayer);
       }
     } else if (card.type === Type.WILD) {
       if (chosenColor) {
@@ -116,8 +117,7 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 4; i++) {
-        this.drawCard(nextPlayer);
-        return;
+        this.penaltyDraw(nextPlayer);
       }
     }
   }
@@ -149,6 +149,11 @@ export class Hand implements IHand {
     }
   }
 
+  penaltyDraw(player: Player): void {
+    player.playerHand?.push(this.deck.dealCard());
+  }
+
+
   // Calculate the score of a player's hand
   calculatePlayerHandScore(player: Player): number {
     let totalScore = 0;
@@ -173,11 +178,17 @@ export class Hand implements IHand {
 
   // Calculate the total score for a player based on the other players' hands
   calculateTotalPlayerScore(player: Player): void {
+
+    console.log(player.name)
+
     let newScore = player.score || 0;
     this.players.forEach((p) => {
-      if (player.playerHand?.length === 0) return;
+      if (p.playerHand?.length === 0)
+        return;
       newScore += this.calculatePlayerHandScore(p);
+      console.log(newScore)
     });
+
 
     player.score = newScore;
   }

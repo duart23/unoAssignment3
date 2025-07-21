@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { IGame, Player } from "@/interfaces/IGame";
 import { Hand } from "@/model/Hand";
 import { Game } from "@/model/Game";
+import { router } from "@/router";
 
 export const useGameStore = defineStore("game", {
   state: () => ({
@@ -34,7 +35,13 @@ export const useGameStore = defineStore("game", {
     },
     
     endGame(player: Player): void {
-      this.game?.endHand(player);
+      console.log(`${player.name} wins the hand!`);
+      const isGameOver = this.game?.endHand(player); //This caluclates the total score, checks if the game is over and resets the hand
+
+      if(isGameOver === true) {
+        this.winner = player;
+      }
     },
+
   },
 });

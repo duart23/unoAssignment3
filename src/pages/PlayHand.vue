@@ -4,7 +4,7 @@ import UnoCard from "@/components/UnoCard.vue";
 import { ICard, Type, Color } from "@/interfaces/IDeck";
 import { router } from "@/router";
 import { useGameStore } from "@/stores/gameStore";
-import { computed, watchEffect } from "vue";
+import { ref, watchEffect } from "vue";
 
 const gameStore = useGameStore();
 
@@ -14,6 +14,10 @@ if (!gameStore.game?.currentHand) {
 
 const currentHand = gameStore.game?.currentHand;
 
+const openPickColor = ref(false);
+
+
+
 function drawCard() {
   const player = gameStore.game?.players[currentHand.currentPlayerIndex];
   if (!player) return;
@@ -22,13 +26,24 @@ function drawCard() {
 }
 
 function applyCardEffect(card: ICard) {
-  if (!card) return;
 
-  const chosenColor = Color.RED;
+  if (!card) return;
   if (card.type === Type.WILD || card.type === Type.WILD_DRAW_FOUR) {
-    currentHand.applyCardEffect(card, chosenColor);
+    console.log("Wild card played:", card);
+    openPickColor.value = true;
+    // Wait for the player to choose a color
+    //NOOOOT WORKIIIINGGG
+
+    currentHand.applyCardEffect(card, chooseColor(Color.RED));
+
   } else currentHand.applyCardEffect(card);
 }
+
+function chooseColor(color: Color) {
+  openPickColor.value = false;
+  return color;
+}
+
 
 function playCard(card: ICard) {
   const player = gameStore.game?.players[currentHand.currentPlayerIndex];
@@ -49,10 +64,17 @@ function playCard(card: ICard) {
     applyCardEffect(card);
     if (player.playerHand.length === 0) {
       gameStore.endGame(player);
+
+      if (gameStore.winner) {
+        console.log("Game Over! Winner:", gameStore.winner.name);
+        router.push("/game-over");
+        return;
+      }
       router.push("/game");
     }
-    currentHand?.nextPlayer();
   }
+
+  currentHand?.nextPlayer();
 }
 
 const player = gameStore.game?.players[currentHand.currentPlayerIndex];
@@ -100,6 +122,16 @@ watchEffect(() => {
       <button>Say Uno</button>
     </div>
   </div>
+
+  <div v-if="openPickColor" class="modal">
+    <button
+      v-for="color in Object.values(Color).filter((c) => c !== Color.BLACK)"
+      :key="color"
+      @click="chooseColor(color)"
+    >
+      {{ color }}
+    </button>
+  </div>
 </template>
 
 <style scoped>
@@ -110,5 +142,38 @@ watchEffect(() => {
 .drawPileImage {
   width: 100px;
   height: 150px;
+}
+
+.modal {
+  position: fixed;
+  z-index: 999;
+  top: 50%;
+  left: 30%;
+  width: 500px;
+  height: 100px;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 10px;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.modal button {
+  width: 80px;
+  height: 40px;
+  font-size: 16px;
+} 
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* slightly dark + transparent */
+  backdrop-filter: blur(6px); /* this applies the blur effect */
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

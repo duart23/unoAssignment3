@@ -35,12 +35,13 @@ export class Game implements IGame {
   }
 
   endHand(winningPlayer: Player): boolean {
+
+    console.log(winningPlayer.name)
     if (!this.currentHand) {
       throw new Error("No current hand to end.");
     }
 
     this.currentHand.calculateTotalPlayerScore(winningPlayer);
-    console.log(winningPlayer.score);
 
     const isGameOver = this.checkGameWinner(winningPlayer);
     if (isGameOver) {
@@ -50,8 +51,11 @@ export class Game implements IGame {
       return isGameOver;
     }
 
-    this.currentHand.discardPile = []; 
-    this.currentHand.startHand(this.players);
+    this.currentHand.discardPile = [];
+    this.players.forEach(p => {
+      p.playerHand = [];
+      p.hasCalledUno = false;
+    }); 
     return false;
   }
 

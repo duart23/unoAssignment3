@@ -32,6 +32,8 @@ export interface IHand {
   // Draws a card for the current player
   drawCard(palyer: Player): void;
   
+  penaltyDraw(player: Player): void;
+
   callUno(player: Player): void;
 
   checkUno(player: Player): void;
