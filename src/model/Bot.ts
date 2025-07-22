@@ -10,16 +10,18 @@ export class Bot implements Player {
 
   game?: IGame;
 
-  constructor(name: string) {
+  constructor(name: string, game?: IGame) {
     this.name = name;
     this.playerHand = [];
     this.score = 0;
     this.hasCalledUno = false;
     this.isBot = true;
+    this.game = game;
   }
 
   botTakeTurn(): void {
-    if (!this.game || !this.game.currentHand) {      throw new Error("No current hand to play.");
+    if (!this.game || !this.game.currentHand) {
+      throw new Error("No current hand to play.");
     }
 
     const discardPile = this.game.currentHand.discardPile;
@@ -36,7 +38,7 @@ export class Bot implements Player {
         card.color === Color.BLACK
     );
 
-    this.game.currentHand.callUno(this);
+    // this.game.currentHand.callUno(this);
 
     if (playableCard) {
       let chosenColor: Color;
@@ -46,8 +48,10 @@ export class Bot implements Player {
       ) {
         chosenColor = this.pickMostCommonColor();
         this.game.currentHand.playCard(playableCard, this, chosenColor);
+        this.game.currentHand.nextPlayer();
       } else {
         this.game.currentHand.playCard(playableCard, this);
+        this.game.currentHand.nextPlayer();
       }
     } else {
       this.game.currentHand.drawCard(this);
@@ -55,7 +59,7 @@ export class Bot implements Player {
     }
   }
 
-  private pickMostCommonColor(): Color {
+  pickMostCommonColor(): Color {
     const colorCount: Record<Color, number> = {
       [Color.RED]: 0,
       [Color.YELLOW]: 0,

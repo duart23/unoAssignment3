@@ -6,14 +6,15 @@ const gameStore = useGameStore();
 const router = useRouter();
 
 function startGame() {
+
   if (!gameStore.game) {
     return;
   }
-  if (gameStore.game?.players.length < 2) {
+  if (gameStore.players.length < 2) {
     alert("At least two players are required to start the game.");
     return;
   }
-  gameStore.startGame(gameStore.game?.players, gameStore.game?.gameId);
+  gameStore.startGame(gameStore.players, gameStore.game?.gameId);
 
   setTimeout(() => {
     router.push("/play-hand");

@@ -4,12 +4,12 @@ import { useGameStore } from "@/stores/gameStore";
 import { useRouter } from "vue-router";
 import type { Player } from "@/interfaces/IGame";
 import { Bot } from "@/model/Bot";
+import { Color } from "@/interfaces/IDeck";
 
 const gameStore = useGameStore();
 const router = useRouter();
 
 const playerName = ref("");
-const players: Player[] = [];
 
 const nrOfBots = ref(1);
 
@@ -21,27 +21,25 @@ function createPlayer(name: string) {
     hasCalledUno: false,
     isBot: false,
   };
-  players.push(player);
+  gameStore.players.push(player);
 }
 
 function createBots(nrOfBots: number) {
   for (let i = 0; i < nrOfBots; i++) {
     const botName = `Bot ${i + 1}`;
-    const bot: Player = {
-      name: botName,
-      playerHand: [],
-      score: 0,
-      hasCalledUno: false,
-      isBot: true,
-    };
-    players.push(bot);
+    const bot = new Bot(botName); 
+    if (gameStore.game) {
+      bot.game = gameStore.game;
+    }
+    gameStore.players.push(bot);
   }
 }
 
+
 function createGame() {
+  gameStore.createGame(gameStore.players);
   createPlayer(playerName.value);
   createBots(nrOfBots.value);
-  gameStore.createGame(players);
   router.push("/game");
 }
 </script>

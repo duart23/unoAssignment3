@@ -7,6 +7,7 @@ export interface Player {
   score: number;
   hasCalledUno: boolean;
   isBot? : boolean;
+  game?  : IGame; 
 }
   
 export interface IGame {

@@ -66,15 +66,17 @@ export class Hand implements IHand {
     const topCard = this.discardPile[this.discardPile.length - 1];
 
     if (
+      card.type === Type.WILD ||
+      card.type === Type.WILD_DRAW_FOUR ||
       card.color === topCard.color ||
-      card.value === topCard.value ||
-
+      (card.type === Type.NUMBER &&
+        topCard.type === Type.NUMBER &&
+        card.value !== null &&
+        topCard.value !== null &&
+        card.value === topCard.value) ||
       (card.type === Type.DRAW_TWO && topCard.type === Type.DRAW_TWO) ||
       (card.type === Type.REVERSE && topCard.type === Type.REVERSE) ||
-      (card.type === Type.SKIP && topCard.type === Type.SKIP) ||
-      card.type === Type.WILD ||
-      card.type === Type.WILD_DRAW_FOUR
-      
+      (card.type === Type.SKIP && topCard.type === Type.SKIP)
     ) {
       this.discardPile.push(card);
       player.playerHand = player.playerHand?.filter((c) => c !== card);
@@ -101,6 +103,7 @@ export class Hand implements IHand {
       for (let i = 0; i < 2; i++) {
         this.penaltyDraw(nextPlayer);
       }
+      return;
     } else if (card.type === Type.WILD) {
       if (chosenColor) {
         this.pickColor(chosenColor);
@@ -109,7 +112,6 @@ export class Hand implements IHand {
     } else if (card.type === Type.WILD_DRAW_FOUR) {
       if (chosenColor) {
         this.pickColor(chosenColor);
-        return;
       }
       const nextPlayer =
         this.players[
@@ -117,8 +119,10 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 4; i++) {
+        console.log("+1");
         this.penaltyDraw(nextPlayer);
       }
+      return;
     }
   }
 
@@ -153,7 +157,6 @@ export class Hand implements IHand {
     player.playerHand?.push(this.deck.dealCard());
   }
 
-
   // Calculate the score of a player's hand
   calculatePlayerHandScore(player: Player): number {
     let totalScore = 0;
@@ -178,17 +181,14 @@ export class Hand implements IHand {
 
   // Calculate the total score for a player based on the other players' hands
   calculateTotalPlayerScore(player: Player): void {
-
-    console.log(player.name)
+    console.log(player.name);
 
     let newScore = player.score || 0;
     this.players.forEach((p) => {
-      if (p.playerHand?.length === 0)
-        return;
+      if (p.playerHand?.length === 0) return;
       newScore += this.calculatePlayerHandScore(p);
-      console.log(newScore)
+      console.log(newScore);
     });
-
 
     player.score = newScore;
   }

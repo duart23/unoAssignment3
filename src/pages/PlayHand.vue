@@ -4,7 +4,7 @@ import UnoCard from "@/components/UnoCard.vue";
 import { ICard, Type, Color } from "@/interfaces/IDeck";
 import { router } from "@/router";
 import { useGameStore } from "@/stores/gameStore";
-import { ref, watchEffect } from "vue";
+import { ref, watch } from "vue";
 
 const gameStore = useGameStore();
 
@@ -15,42 +15,44 @@ if (!gameStore.game?.currentHand) {
 const currentHand = gameStore.game?.currentHand;
 
 const openPickColor = ref(false);
+const cardToPickColor = ref<ICard | null>(null);
+const waitingForColor = ref(false);
 
-
+watch(
+  () => gameStore.game?.currentHand?.currentPlayerIndex,
+  () => {
+    gameStore.checkBotTurn();
+  }
+);
 
 function drawCard() {
-  const player = gameStore.game?.players[currentHand.currentPlayerIndex];
+  const player = gameStore.players[currentHand.currentPlayerIndex];
   if (!player) return;
   currentHand.drawCard(player);
   gameStore.game?.currentHand?.nextPlayer();
 }
 
-function applyCardEffect(card: ICard) {
-
+function chooseColor(card: ICard | null, color: Color) {
   if (!card) return;
-  if (card.type === Type.WILD || card.type === Type.WILD_DRAW_FOUR) {
-    console.log("Wild card played:", card);
-    openPickColor.value = true;
-    // Wait for the player to choose a color
-    //NOOOOT WORKIIIINGGG
-
-    currentHand.applyCardEffect(card, chooseColor(Color.RED));
-
-  } else currentHand.applyCardEffect(card);
-}
-
-function chooseColor(color: Color) {
+  console.log(card.type)
+  currentHand.applyCardEffect(card, color);
   openPickColor.value = false;
-  return color;
+  cardToPickColor.value = null;
+  waitingForColor.value = false;
+  currentHand?.nextPlayer();
 }
-
 
 function playCard(card: ICard) {
-  const player = gameStore.game?.players[currentHand.currentPlayerIndex];
+  const player = gameStore.players[currentHand.currentPlayerIndex];
   if (!player) return;
 
   if (!player.playerHand?.includes(card)) {
     console.error("Card not found in player's hand:", card);
+    return;
+  }
+
+  if (waitingForColor.value) {
+    console.warn("Must pick a color before continuing.");
     return;
   }
 
@@ -60,8 +62,17 @@ function playCard(card: ICard) {
     console.error("Invalid move attempted with card:", card);
     return;
   } else {
-    console.log("Card played:", card);
-    applyCardEffect(card);
+
+
+    if (card.type === Type.WILD || card.type === Type.WILD_DRAW_FOUR) {
+      cardToPickColor.value = card;
+      openPickColor.value = true;
+      waitingForColor.value = true;
+    } else {
+      currentHand.applyCardEffect(card);
+      currentHand?.nextPlayer();
+    }
+
     if (player.playerHand.length === 0) {
       gameStore.endGame(player);
 
@@ -73,37 +84,26 @@ function playCard(card: ICard) {
       router.push("/game");
     }
   }
-
-  currentHand?.nextPlayer();
 }
 
-const player = gameStore.game?.players[currentHand.currentPlayerIndex];
-if (player?.isBot) {
-  console.log("Bot is taking turn");
-  currentHand.botTakeTurn();
-}
 
-watchEffect(() => {
-  const player = gameStore.game?.players[currentHand.currentPlayerIndex];
-  if (player?.isBot) {
-    currentHand.botTakeTurn();
-  }
-});
+
 </script>
 
 <template>
   <PlayerHand
-    v-for="(player, index) in gameStore.game?.players"
+    v-for="(player, index) in gameStore.players"
     :key="index"
     :cards="player.playerHand"
     :name="player.name"
+    :disabled="waitingForColor"
     @playCard="playCard"
   />
 
   <div class="gameState">
     <div class="currentPlayer">
       Current Player:
-      {{ gameStore.game?.players[currentHand.currentPlayerIndex].name }}
+      {{ gameStore.players[currentHand.currentPlayerIndex].name }}
     </div>
     <div class="discardPile">
       <UnoCard
@@ -118,19 +118,20 @@ watchEffect(() => {
       class="drawPileImage"
     />
     <div class="gameActions">
-      <button @click="drawCard">Draw Card</button>
+      <button @click="drawCard" :disabled="waitingForColor">Draw Card</button>
       <button>Say Uno</button>
     </div>
-  </div>
 
-  <div v-if="openPickColor" class="modal">
-    <button
-      v-for="color in Object.values(Color).filter((c) => c !== Color.BLACK)"
-      :key="color"
-      @click="chooseColor(color)"
-    >
-      {{ color }}
-    </button>
+    <div class="modal" v-if="openPickColor">
+      <button
+        v-for="color in Object.values(Color).filter((c) => c !== Color.BLACK)"
+        :key="color"
+        @click="chooseColor(cardToPickColor, color)"
+        :disabled="!cardToPickColor"
+      >
+        {{ color }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -164,7 +165,7 @@ watchEffect(() => {
   width: 80px;
   height: 40px;
   font-size: 16px;
-} 
+}
 
 .modal-backdrop {
   position: fixed;
