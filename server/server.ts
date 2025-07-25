@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import app from "./app";
 import connectDB from "./db/connect";
 import { registerGameHandlers } from "./sockets/game.socket";
-
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -26,3 +25,5 @@ connectDB().then(() => {
     console.log(`Server listening on port ${PORT}`);
   });
 });
+
+export { io, server };

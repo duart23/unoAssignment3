@@ -1,16 +1,24 @@
 import mongoose from "mongoose";
+import { HandSchema } from "./HandModel";
 
-const PlayerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  score: { type: Number, default: 0 },
-  isReady: { type: Boolean, default: false },
-});
-
-const GameSchema = new mongoose.Schema({
-  players: [PlayerSchema],
-  currentTurn: { type: Number, default: 0 },
-  gameState: { type: String, enum: ["waiting", "playing", "finished"], default: "waiting" },
-});
+const GameSchema = new mongoose.Schema(
+  {
+    players: [{ type: mongoose.Schema.Types.ObjectId, ref: "PlayerModel" }],
+    gameId: { type: Number, required: true, unique: true },
+    winner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player",
+      default: null,
+    },
+    gameState: {
+      type: String,
+      enum: ["waiting", "playing", "finished"],
+      default: "waiting",
+    },
+    hands: { type: [HandSchema], default: [] },
+  },
+  { timestamps: true }
+);
 
 const GameModel = mongoose.model("Game", GameSchema);
 

@@ -7,9 +7,4 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     console.log(`Socket disconnected: ${socket.id}`);
   });
 
-  // Example: Listen for test event
-  socket.on("test", (data) => {
-    console.log("Received test data:", data);
-    socket.emit("testResponse", { message: "Hello from server!" });
-  });
 }
