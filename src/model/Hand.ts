@@ -56,6 +56,7 @@ export class Hand implements IHand {
   }
 
   playCard(card: ICard, player: Player, chosenColor?: Color): boolean {
+
     if (
       this.currentPlayerIndex !==
       this.players.findIndex((p) => p.name === player.name)
@@ -92,7 +93,9 @@ export class Hand implements IHand {
       this.nextPlayer();
       return;
     } else if (card.type === Type.REVERSE) {
-      this.reverseDirection;
+      console.log("Before:", this.direction);
+      this.direction *= -1;
+      console.log("After:", this.direction);
       return;
     } else if (card.type === Type.DRAW_TWO) {
       const nextPlayer =
@@ -119,7 +122,6 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 4; i++) {
-        console.log("+1");
         this.penaltyDraw(nextPlayer);
       }
       return;
@@ -136,10 +138,6 @@ export class Hand implements IHand {
         (this.direction === 1 ? 1 : -1) +
         this.players.length) %
       this.players.length;
-  }
-
-  reverseDirection(): void {
-    this.direction *= -1;
   }
 
   drawCard(player: Player): void {

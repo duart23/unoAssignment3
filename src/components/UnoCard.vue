@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 import type { ICard } from "@/interfaces/IDeck";
 import { Type } from "@/interfaces/IDeck";
+import { Player } from "@/interfaces/IGame";
 import { defineProps, defineEmits } from "vue";
 const props = defineProps<{
   card: ICard;
+  player?: Player;
 }>();
 const emit = defineEmits<{
   (e: "play", card: ICard): void;
@@ -15,20 +17,24 @@ function handleClick() {
 </script>
 
 <template>
-  <div class="unoCard" :class="card.color.toLowerCase()" @click="handleClick">
-    <div class="card">
-      <div v-if="card.type === Type.WILD" class="cardValue">W
-      </div>
-      <div v-if="card.type === Type.NUMBER" class="cardValue">
-        {{ card.value }}
-      </div>
-      <div v-if="card.type === Type.SKIP" class="cardValue">⦸</div>
-      <div v-if="card.type === Type.REVERSE" class="cardValue">↻</div>
-      <div v-if="card.type === Type.DRAW_TWO" class="cardValue">
-        +2
-      </div>
-      <div v-if="card.type === Type.WILD_DRAW_FOUR" class="cardValue">+4
-      </div>
+  <div v-if="player?.isBot" class="backCard">
+    <img src="@/assets/uno-back.png" alt="Back of Card" />
+  </div>
+  <div
+    class="unoCard"
+    :class="card.color.toLowerCase()"
+    @click="handleClick"
+    v-else
+  > 
+    <div v-if="card.type === Type.WILD" class="cardValue">W</div>
+    <div v-else-if="card.type === Type.NUMBER" class="cardValue">
+      {{ card.value }}
+    </div>
+    <div v-else-if="card.type === Type.SKIP" class="cardValue">⦸</div>
+    <div v-else-if="card.type === Type.REVERSE" class="cardValue">↻</div>
+    <div v-else-if="card.type === Type.DRAW_TWO" class="cardValue">+2</div>
+    <div v-else-if="card.type === Type.WILD_DRAW_FOUR" class="cardValue">
+      +4
     </div>
   </div>
 </template>
@@ -46,6 +52,17 @@ function handleClick() {
   cursor: pointer;
 }
 
+.backCard {
+  width: 110px;
+  height: 160px;
+}
+
+.backCard img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
 .cardValue {
   font-size: 24px;
   border-radius: 50%;
@@ -54,9 +71,6 @@ function handleClick() {
   padding: 16px;
 }
 
-.wildCard {
-  width: 100%;
-}
 .unoCard.red {
   background-color: #f11010;
 }
@@ -73,7 +87,7 @@ function handleClick() {
   background-color: #eef12a;
 }
 
-.uno-card.black {
+.unoCard.black {
   background-color: #000000;
 }
 </style>

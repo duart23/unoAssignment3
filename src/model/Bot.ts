@@ -7,7 +7,7 @@ export class Bot implements Player {
   score: number;
   hasCalledUno: boolean;
   isBot: boolean;
-
+  chosenColor?: Color;
   game?: IGame;
 
   constructor(name: string, game?: IGame) {
@@ -28,31 +28,43 @@ export class Bot implements Player {
     if (!discardPile || discardPile.length === 0) {
       throw new Error("No cards in discard pile.");
     }
+
     const topCard = discardPile[discardPile.length - 1];
 
-    const playableCard = this.playerHand?.find(
-      (card) =>
-        card.color === topCard.color ||
-        (card.type === Type.NUMBER && card.value === topCard.value) ||
-        card.type === topCard.type ||
-        card.color === Color.BLACK
-    );
+    const playableCards = this.playerHand?.filter((card) => {
+      if (!card || !topCard) return false;
 
-    // this.game.currentHand.callUno(this);
+      const isMatchingColor = card.color === topCard.color;
+      const isMatchingNumber =
+        card.type === Type.NUMBER &&
+        topCard.type === Type.NUMBER &&
+        card.value != null &&
+        card.value === topCard.value;
+      const isMatchingType = card.type === topCard.type && card.type !== Type.NUMBER;
+      const isWildCard = card.color === Color.BLACK;
 
-    if (playableCard) {
-      let chosenColor: Color;
+      return (
+        isMatchingColor || isMatchingNumber || isMatchingType || isWildCard
+      );
+    });
+
+    if (playableCards && playableCards.length > 0) {
+      const playableCard = playableCards[Math.random() * playableCards.length | 0];
+
       if (
         playableCard.type === Type.WILD ||
         playableCard.type === Type.WILD_DRAW_FOUR
       ) {
-        chosenColor = this.pickMostCommonColor();
-        this.game.currentHand.playCard(playableCard, this, chosenColor);
-        this.game.currentHand.nextPlayer();
+        this.pickMostCommonColor();
+        this.game.currentHand.playCard(playableCard, this);
+        this.game.currentHand.applyCardEffect(playableCard, this.chosenColor);
+        this.chosenColor === undefined;
       } else {
         this.game.currentHand.playCard(playableCard, this);
-        this.game.currentHand.nextPlayer();
+        this.game.currentHand.applyCardEffect(playableCard, this.chosenColor);
       }
+
+      this.game.currentHand.nextPlayer();
     } else {
       this.game.currentHand.drawCard(this);
       this.game.currentHand.nextPlayer();
@@ -60,6 +72,7 @@ export class Bot implements Player {
   }
 
   pickMostCommonColor(): Color {
+
     const colorCount: Record<Color, number> = {
       [Color.RED]: 0,
       [Color.YELLOW]: 0,
@@ -74,8 +87,11 @@ export class Bot implements Player {
       }
     });
 
-    return Object.entries(colorCount).sort(
+    this.chosenColor = Object.entries(colorCount).sort(
       (a, b) => b[1] - a[1]
     )[0][0] as Color;
+    
+    console.log(`Bot ${this.name} chose color: ${this.chosenColor}`);
+    return this.chosenColor;
   }
 }

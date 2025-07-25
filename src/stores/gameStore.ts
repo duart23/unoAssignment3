@@ -46,12 +46,7 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    checkBotTurn() {
-      const player =
-        this.players[this.game?.currentHand?.currentPlayerIndex || 0];
-      console.log(player);
-      if (player?.isBot === true) {
-        console.log("Bot's turn");
+    checkBotTurn(player: Player): void {
         setTimeout(() => {
           if (player instanceof Bot) {
             player.botTakeTurn();
@@ -60,8 +55,8 @@ export const useGameStore = defineStore("game", {
               "Player is marked as bot but is not an instance of Bot."
             );
           }
-        }, 500);
+        }, 1000);
       }
     },
   },
-});
+);

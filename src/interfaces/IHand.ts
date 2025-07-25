@@ -23,8 +23,6 @@ export interface IHand {
 
   pickColor(chosenColor: Color): void;
 
-  reverseDirection(): void;
-
   calculatePlayerHandScore(player: Player): number;
 
   calculateTotalPlayerScore(player: Player): void;

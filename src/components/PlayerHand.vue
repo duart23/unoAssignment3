@@ -1,10 +1,11 @@
 <script lang="ts" setup>
+import { Player } from "@/interfaces/IGame";
 import UnoCard from "./UnoCard.vue";
 import { ICard } from "@/interfaces/IDeck";
 
-const { cards, name } = defineProps<{
+const { cards, player } = defineProps<{
   cards: ICard[] | undefined;
-  name: string;
+  player: Player;
 }>();
 
 const emit = defineEmits<{
@@ -17,12 +18,12 @@ function handlePlay(card: ICard) {
 </script>
 
 <template>
-    <h2>{{ name }}</h2>
   <div class="playerHand">
     <UnoCard
       v-for="(card, i) in cards"
       :key="i"
       :card="card"
+      :player="player"
       @play="handlePlay"
       
     ></UnoCard>

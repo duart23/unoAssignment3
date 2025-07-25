@@ -21,20 +21,36 @@ const waitingForColor = ref(false);
 watch(
   () => gameStore.game?.currentHand?.currentPlayerIndex,
   () => {
-    gameStore.checkBotTurn();
-  }
+    const player = gameStore.players?.[currentHand.currentPlayerIndex];
+    if (!player || !player.isBot) return;
+
+    gameStore.checkBotTurn(player);
+
+    if (player.playerHand?.length === 0) {
+      gameStore.endGame(player);
+
+      if (gameStore.winner) {
+        console.log("Game Over! Winner:", gameStore.winner.name);
+        router.push("/game-over");
+        return;
+      }
+
+      router.push("/game");
+    }
+  },
+  { immediate: true }
 );
 
 function drawCard() {
   const player = gameStore.players[currentHand.currentPlayerIndex];
-  if (!player) return;
+  if (!player || player.isBot) return;
   currentHand.drawCard(player);
   gameStore.game?.currentHand?.nextPlayer();
 }
 
 function chooseColor(card: ICard | null, color: Color) {
   if (!card) return;
-  console.log(card.type)
+  console.log(card.type);
   currentHand.applyCardEffect(card, color);
   openPickColor.value = false;
   cardToPickColor.value = null;
@@ -62,8 +78,6 @@ function playCard(card: ICard) {
     console.error("Invalid move attempted with card:", card);
     return;
   } else {
-
-
     if (card.type === Type.WILD || card.type === Type.WILD_DRAW_FOUR) {
       cardToPickColor.value = card;
       openPickColor.value = true;
@@ -86,7 +100,19 @@ function playCard(card: ICard) {
   }
 }
 
-
+function getPositionClass(index: number): string {
+  const total = gameStore.players.length;
+  if (total === 2) {
+    return index === 0 ? 'bottom' : 'top';
+  }
+  if (total === 3) {
+    return ['bottom', 'left', 'top'][index];
+  }
+  if (total === 4) {
+    return ['bottom', 'left', 'top', 'right'][index];
+  }
+  return '';
+}
 
 </script>
 
@@ -95,28 +121,31 @@ function playCard(card: ICard) {
     v-for="(player, index) in gameStore.players"
     :key="index"
     :cards="player.playerHand"
-    :name="player.name"
+    :player="player"
     :disabled="waitingForColor"
+    :class="[getPositionClass(index), { 'non-clickable': player.isBot }]"
     @playCard="playCard"
   />
 
   <div class="gameState">
+    <div class="gameCenter">
+      <div class="discardPile">
+        <UnoCard
+          v-if="currentHand?.discardPile[currentHand.discardPile.length - 1]"
+          :card="currentHand?.discardPile[currentHand.discardPile.length - 1]"
+        />
+      </div>
+      <img
+        v-if="currentHand.deck.cards.length > 0"
+        src="@/assets/uno-back.png"
+        alt="Draw Pile"
+        class="drawPileImage"
+      />
+    </div>
     <div class="currentPlayer">
       Current Player:
       {{ gameStore.players[currentHand.currentPlayerIndex].name }}
     </div>
-    <div class="discardPile">
-      <UnoCard
-        v-if="currentHand?.discardPile[currentHand.discardPile.length - 1]"
-        :card="currentHand?.discardPile[currentHand.discardPile.length - 1]"
-      />
-    </div>
-    <img
-      v-if="currentHand.deck.cards.length > 0"
-      src="@/assets/uno-back.png"
-      alt="Draw Pile"
-      class="drawPileImage"
-    />
     <div class="gameActions">
       <button @click="drawCard" :disabled="waitingForColor">Draw Card</button>
       <button>Say Uno</button>
@@ -136,6 +165,51 @@ function playCard(card: ICard) {
 </template>
 
 <style scoped>
+
+.bottom {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.top {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.left {
+  position: absolute;
+  display: flex;
+  justify-content: flex-start;
+  top: 50%;
+  width: 40%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+.right {
+  position: absolute;
+  display: flex;
+  justify-content: flex-end;
+  top: 50%;
+   width: 40%;
+  right: 10px;
+  transform: translateY(-50%);
+}
+
+.gameState {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.gameCenter {
+  display: flex;
+  gap: 1rem;
+}
 .drawPile {
   padding: 0;
 }
@@ -143,6 +217,11 @@ function playCard(card: ICard) {
 .drawPileImage {
   width: 100px;
   height: 150px;
+}
+
+.non-clickable {
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .modal {
