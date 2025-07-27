@@ -27,7 +27,7 @@ export const useGameStore = defineStore("game", {
       });
     },
 
-    startGame(players: Player[], gameId: number): void {
+    startGame(players: Player[]): void {
       if (players.length < 2) {
         throw new Error("Not enough players to start the game!");
       }

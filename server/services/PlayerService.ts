@@ -2,7 +2,7 @@ import PlayerModel from "../models/PlayerModel";
 
 export async function createPlayer(name: string, password: string) {
   const newPlayer = new PlayerModel({
-    playerId: Math.floor(Math.random() * 1000000),
+    playerId: Math.floor(Math.random() * 1000000).toString(),
     name,
     password,
     isBot: false,
