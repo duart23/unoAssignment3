@@ -15,7 +15,7 @@ export async function createPlayer(name: string, password: string) {
 }
 
 export async function loginPlayer(name: string, password: string) {
-  return PlayerModel.findOne({ name, password }); // simple match, no hashing
+  return PlayerModel.findOne({ name, password }); 
 }
 
 export async function updatePlayer(
@@ -25,6 +25,7 @@ export async function updatePlayer(
     playerHand: ICard[];
     hasCalledUno: boolean;
     isBot: boolean;
+    gameId: string;
   }>
 ) {
   const player = await PlayerModel.findOne({ playerId });
@@ -33,4 +34,8 @@ export async function updatePlayer(
   Object.assign(player, updates);
   await player.save();
   return player;
+}
+
+export async function getPlayerById(playerId: string) {
+  return PlayerModel.findOne({ playerId });
 }

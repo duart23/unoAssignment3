@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as playerService from "../services/PlayerService";
+import { getPlayerById } from "../services/PlayerService";
 
 export async function createPlayerHandler(req: Request, res: Response) {
   try {
@@ -42,4 +43,16 @@ export async function updatePlayerHandler(req: Request, res: Response) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: errorMessage });
   }
+}
+
+export async function getPlayerByIdHandler(req: Request, res: Response){
+  const { playerId } = req.params;
+
+  try {
+      const player = await getPlayerById(playerId);
+      res.status(200).json(player);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ error: errorMessage });
+    }
 }

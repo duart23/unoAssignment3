@@ -1,27 +1,25 @@
 import { ICard } from "@/interfaces/IDeck";
+import { Player } from "@/interfaces/IGame";
 import { defineStore } from "pinia";
 
 export const usePlayerStore = defineStore("player", {
   state: () => ({
-    name: "" as string,
-    playerId: "" as string,
-    playerHand: [] as ICard[],
-    score: 0,
-    isBot: false,
-    hasCalledUno: false,
+    player: {
+      name: "" as string,
+      playerId: "" as string,
+      playerHand: [] as ICard[],
+      score: 0 as number,
+      isBot: false as boolean,
+      hasCalledUno: false as boolean,
+      _id: "",
+      password: "",
+    }
   }),
   actions: {
 
-
-    setName(name: string) {
-      this.name = name;
+    setPlayer(player: Player) {
+        this.player = player;
     },
 
-    clearHand() {
-      this.playerHand = [];
-    },
-    resetScore() {
-      this.score = 0;
-    },
   },
 });

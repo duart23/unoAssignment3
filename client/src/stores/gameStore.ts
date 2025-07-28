@@ -14,7 +14,7 @@ export const useGameStore = defineStore("game", {
     players: [] as Player[],
     currentHand: null as IHand | null,
     winner: undefined as Player | undefined,
-    isGameOver: false
+    isGameOver: false  
   }),
 
   actions: {
@@ -24,7 +24,7 @@ export const useGameStore = defineStore("game", {
 
     async joinGame(gameId: string) {
       const playerStore = usePlayerStore();
-      const playerId = playerStore.playerId;
+      const playerId = playerStore.player.playerId;
       if(!playerId) {
         throw new Error("No Player found");
       } 

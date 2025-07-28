@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
-import * as gameService from "../services/GameService";
-import { updateGame } from "../services/GameService";
+import { createGame, getAllGames, getGameById, joinGame, updateGame } from "../services/GameService";
 
 export async function createGameHandler(req: Request, res: Response) {
   try {
-    const game = await gameService.createGame();
+    const game = await createGame();
     res.status(201).json(game);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -18,7 +17,7 @@ export async function joinGameHandler(req: Request, res: Response) {
     if (!playerId || !gameId) {
       return res.status(400).json({ error: "Player ID and Game ID are required" });
     }
-    const game = await gameService.joinGame(playerId, gameId);
+    const game = await joinGame(playerId, gameId);
     res.status(200).json(game);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -26,9 +25,9 @@ export async function joinGameHandler(req: Request, res: Response) {
   }
 }
 
-export async function getAllGamesHandler(res: Response) {
+export async function getAllGamesHandler(req: Request, res: Response) {
   try {
-    const games = await gameService.getAllGames();
+    const games = await getAllGames();
     res.status(200).json(games);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -39,7 +38,7 @@ export async function getAllGamesHandler(res: Response) {
 export async function getGameByIdHandler(req: Request, res: Response) {
   const { gameId } = req.params;
   try {
-    const game = await gameService.getGameById(Number(gameId));
+    const game = await getGameById(Number(gameId));
     res.status(200).json(game);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

@@ -7,6 +7,7 @@ export const PlayerSchema = new mongoose.Schema({
   score: { type: Number, default: 0 },
   isBot: { type: Boolean, default: false },
   playerHand: { type: Array, default: [] },
+  gameId: { type: mongoose.Schema.Types.String, ref: "GameId", default: null }
 });
 
 const Player = mongoose.model("Player", PlayerSchema);

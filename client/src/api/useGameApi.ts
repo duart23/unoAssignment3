@@ -14,7 +14,7 @@ export async function apiJoinGame(playerId: string, gameId: string): Promise<IGa
 }
 
 export async function apiGetAllGames(): Promise<IGame[]> {
-  const response = await axios.get(`${API_BASE}/all`);
+  const response = await axios.get(`${API_BASE}`);
   return response.data;
 }
 
