@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as gameService from "../services/GameService";
+import { updateGame } from "../services/GameService";
 
 export async function createGameHandler(req: Request, res: Response) {
   try {
@@ -40,6 +41,18 @@ export async function getGameByIdHandler(req: Request, res: Response) {
   try {
     const game = await gameService.getGameById(Number(gameId));
     res.status(200).json(game);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: errorMessage });
+  }
+}
+
+export async function updateGameHandler(req: Request, res: Response) {
+  const { handId } = req.params;
+  const updates = req.body;
+  try {
+    const updatedGame = await updateGame(handId, updates);
+    res.status(200).json(updatedGame);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: errorMessage });

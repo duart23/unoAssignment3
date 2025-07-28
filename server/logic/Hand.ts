@@ -1,39 +1,35 @@
-import { ICard, IDeck, Color, Type } from "@/interfaces/IDeck";
-import { IHand } from "@/interfaces/IHand";
-import { IGame, Player } from "@/interfaces/IGame";
+import { ICard, IDeck, Color, Type } from "../interfaces/IDeck";
+import { IHand } from "../interfaces/IHand";
+import { IGame, Player } from "../interfaces/IGame";
 import { Deck } from "./Deck";
-import { Bot } from "./Bot";
 
 export class Hand implements IHand {
-  card?: ICard;
-  players: Player[];
   currentPlayerIndex: number;
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1;
-  game?: IGame;
-  bot?: Bot;
+  gameId: string;
+  game: IGame | null = null;
+  players: Player[] = [];
 
-  constructor(players: Player[], deck?: IDeck, card?: ICard, game?: IGame) {
-    this.card = card;
-    this.players = players;
-    this.game = game;
-    this.deck = deck ?? new Deck();
+  constructor(gameId: string) {
+    this.gameId = gameId;
+    this.deck = [] as unknown as IDeck;
     this.currentPlayerIndex = 0;
     this.discardPile = [];
     this.direction = 1;
   }
 
-  startHand(players: Player[]): void {
-    //Define inital scores
+  startHand(): void {
     this.deck = new Deck();
-
     this.deck.initializeDeck();
     this.deck.shuffleDeck();
     this.direction = 1;
 
+    
+
     for (let i = 0; i < 7; i++) {
-      players.forEach((player) => {
+      this.players.forEach((player) => {
         player.playerHand?.push(this.deck.dealCard());
       });
     }
@@ -52,7 +48,7 @@ export class Hand implements IHand {
       this.discardPile[0].type === "wild_draw_four"
     );
 
-    this.currentPlayerIndex = Math.floor(Math.random() * players.length);
+    this.currentPlayerIndex = Math.floor(Math.random() * (this.players.length ?? 0));
   }
 
   playCard(card: ICard, player: Player, chosenColor?: Color): boolean {
@@ -104,6 +100,9 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 2; i++) {
+        if(!nextPlayer) {
+          throw new Error("Next player not found");
+        }
         this.penaltyDraw(nextPlayer);
       }
       return;
@@ -122,6 +121,9 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 4; i++) {
+        if(!nextPlayer) {
+          throw new Error("Next player not found");
+        }
         this.penaltyDraw(nextPlayer);
       }
       return;
@@ -136,8 +138,8 @@ export class Hand implements IHand {
     this.currentPlayerIndex =
       (this.currentPlayerIndex +
         (this.direction === 1 ? 1 : -1) +
-        this.players.length) %
-      this.players.length;
+        (this.players.length ?? 0)) %
+      (this.players.length ?? 0);
   }
 
   drawCard(player: Player): void {
@@ -212,10 +214,10 @@ export class Hand implements IHand {
     player.hasCalledUno = false;
   }
 
-  botTakeTurn(): void {
-    const currentPlayer = this.players[this.currentPlayerIndex];
-    if (currentPlayer.isBot && currentPlayer instanceof Bot) {
-      currentPlayer.botTakeTurn(); // Call Bot-specific logic
-    }
-  }
+  // botTakeTurn(): void {
+  //   const currentPlayer = this.players[this.currentPlayerIndex];
+  //   if (currentPlayer.isBot && currentPlayer instanceof Bot) {
+  //     currentPlayer.botTakeTurn(); // Call Bot-specific logic
+  //   }
+  // }
 }

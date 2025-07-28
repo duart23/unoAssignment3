@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
+import { ICard } from "../interfaces/IDeck";
 
 export const HandSchema = new mongoose.Schema({
   handId: { type: String, required: true, unique: true },
   currentPlayerIndex: { type: Number, required: true },
-  deck: { type: Array, required: true },
-  discardPile: { type: Array, required: true },
+  deck: { type: Array<ICard>, required: true },
+  discardPile: { type: Array<ICard>, required: true },
   direction: { type: Number, default: 1 },
   winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player", default: null },
   score: { type: Number, default: 0 },

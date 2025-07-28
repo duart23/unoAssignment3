@@ -1,37 +1,37 @@
-import { IGame, Player } from "@/interfaces/IGame";
-import { IHand } from "@/interfaces/IHand";
+import { IGame, Player } from "../interfaces/IGame";
+import { IHand } from "../interfaces/IHand";
 
 export class Game implements IGame {
   players: Player[];
-  gameId: number;
+  gameId: string;
   currentHand: IHand | null = null;
   winner?: Player;
 
 
-  constructor(players: Player[], gameId: number) {
+  constructor(players: Player[], gameId: string) {
     this.players = players;
     this.gameId = gameId;
   }
 
-  createGame(players: Player[], gameId: number): IGame {
+  createGame(players: Player[], gameId: string): IGame {
     return new Game(players, gameId);
   }
 
-  joinGame(gameId: number, player: Player): void {
+  joinGame(gameId: string, player: Player): void {
     if (!gameId) {
       throw new Error("Game does not exist!");
     }
     this.players.push(player);
   }
 
-  startGame(gameId: number): void {
+  startGame(gameId: string): void {
     if (!gameId) {
       throw new Error("Game does not exist!");
     }
     if (this.players.length < 2) {
       throw new Error("Not enough players to start the game!");
     }
-    this.currentHand?.startHand(this.players);
+    this.currentHand?.startHand();
   }
 
   endHand(winningPlayer: Player): boolean {

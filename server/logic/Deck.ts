@@ -48,4 +48,8 @@ export class Deck implements IDeck {
   size(): number {
     return this.cards.length;
   }
+
+  getDeck(): ICard[] {
+    return this.cards;
+  }
 }

@@ -12,15 +12,15 @@ export interface Player {
   
 export interface IGame {
   players: Player[];
-  gameId: number;
+  gameId: string;
   currentHand: IHand | null;
   winner?: Player;
 
-  createGame(players: Player[], gameId: number): IGame;
+  createGame(players: Player[], gameId: string): IGame;
 
-  joinGame(gameId: number,  player: Player): void;
+  joinGame(gameId: string,  player: Player): void;
 
-  startGame(gameId: number): void;
+  startGame(gameId: string): void;
 
   checkGameWinner(player: Player): boolean;
 

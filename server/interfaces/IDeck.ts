@@ -34,4 +34,6 @@ export interface IDeck {
 
   // Returns the number of cards left in the deck
   size(): number;
+
+  getDeck(): ICard[];
 }

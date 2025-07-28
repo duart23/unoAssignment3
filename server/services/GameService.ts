@@ -45,3 +45,20 @@ export async function getGameById(gameId: number) {
   }
   return game;
 }
+
+
+export async function updateGame(
+  gameId: string,
+  updates: Partial<{
+    players: any[];
+    gameState: string;
+    winner: any;
+  }>
+) {
+  const game = await GameModel.findOne({ gameId });
+  if (!game) throw new Error("Game not found");
+
+  Object.assign(game, updates);
+  await game.save();
+  return game;
+}

@@ -1,3 +1,5 @@
+import { ICard } from "../interfaces/IDeck";
+import { Player } from "../interfaces/IGame";
 import { Deck } from "../logic/Deck";
 import { Hand } from "../logic/Hand";
 import GameModel from "../models/GameModel";
@@ -5,25 +7,10 @@ import HandModel from "../models/HandModel";
 
 
 export async function createHand(gameId: string) {
-  const deck = new Deck();
-  deck.initializeDeck();
-  deck.shuffleDeck();
-
-  const game = await GameModel.findById(gameId).populate("players");
+  const game = await GameModel.findById(gameId);
   if (!game) throw new Error("Game not found");
 
-  const hand = new Hand({
-    deck: deck.cards,
-    discardPile: [deck.drawCard()],
-    direction: 1,
-    currentPlayerIndex: 0
-  });
-
-  // Optionally distribute cards using your logic class
-  game.players.forEach(player => {
-    player.playerHand = deck.drawCards(7);
-    // Save player or do something else
-  });
+  const hand = new Hand(gameId);
 
   // Save hand and attach it to the game
   const newHand = await HandModel.create(hand);
@@ -43,10 +30,10 @@ export async function updateHand(
   handId: string,
   updates: Partial<{
     currentPlayerIndex: number;
-    deck: any[];
-    discardPile: any[];
+    deck: ICard[];
+    discardPile: ICard[];
     direction: number;
-    winner: any;
+    winner: Player;
     score: number;
   }>
 ) {

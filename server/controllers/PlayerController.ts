@@ -31,3 +31,15 @@ export async function loginPlayerHandler(req: Request, res: Response) {
     res.status(500).json({ error: errorMessage });
   }
 }
+
+export async function updatePlayerHandler(req: Request, res: Response) {
+  const { playerId } = req.params;
+  const updates = req.body;
+  try {
+    const updatedPlayer = await playerService.updatePlayer(playerId, updates);
+    res.status(200).json(updatedPlayer);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: errorMessage });
+  }
+}

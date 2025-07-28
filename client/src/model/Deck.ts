@@ -1,4 +1,4 @@
-import { IDeck, ICard, Color, Type } from '@/interfaces/IDeck';
+import { IDeck, ICard, Color, Type } from '../interfaces/IDeck';
 
 export class Deck implements IDeck {
   cards: ICard[] = [];
@@ -47,5 +47,9 @@ export class Deck implements IDeck {
 
   size(): number {
     return this.cards.length;
+  }
+
+  getDeck(): ICard[] {
+    return this.cards;
   }
 }

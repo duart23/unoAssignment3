@@ -1,62 +1,35 @@
-import { defineStore } from "pinia";
+
+import {
+  apiCreateGame,
+  apiJoinGame,
+  apiGetGameById
+} from "@/api/useGameApi";
 import { IGame, Player } from "@/interfaces/IGame";
-import { Hand } from "@/model/Hand";
-import { Game } from "@/model/Game";
-import { Bot } from "@/model/Bot";
+import { IHand } from "@/interfaces/IHand";
+import { defineStore } from "pinia";
+import { usePlayerStore } from "./playerStores";
 
 export const useGameStore = defineStore("game", {
   state: () => ({
-    winner: null as Player | null,
-    isGameOver: false as boolean,
-    game: null as IGame | null,
     players: [] as Player[],
+    currentHand: null as IHand | null,
+    winner: undefined as Player | undefined,
+    isGameOver: false
   }),
 
   actions: {
-    createGame(players: Player[]) {
-      const gameId = Math.floor(Math.random() * 10000);
-      this.game = new Game(players, gameId);
+    async createNewGame() {
+      await apiCreateGame();
     },
 
-    joinGame(gameId: number, players: Player[]): void {
-      if (!gameId) {
-        throw new Error("Game does not exist!");
-      }
-      players.forEach(player => {
-        this.game?.players.push(player);
-      });
+    async joinGame(gameId: string) {
+      const playerStore = usePlayerStore();
+      const playerId = playerStore.playerId;
+      if(!playerId) {
+        throw new Error("No Player found");
+      } 
+      await apiJoinGame(playerId, gameId);
     },
 
-    startGame(players: Player[]): void {
-      if (players.length < 2) {
-        throw new Error("Not enough players to start the game!");
-      }
-      if (this.game) {
-        this.game.currentHand = new Hand(players);
-        this.game.currentHand.startHand(players);
-      }
-    },
-
-    endGame(player: Player): void {
-      console.log(`${player.name} wins the hand!`);
-      const isGameOver = this.game?.endHand(player); //This caluclates the total score, checks if the game is over and resets the hand
-
-      if (isGameOver === true) {
-        this.winner = player;
-      }
-    },
-
-    checkBotTurn(player: Player): void {
-        setTimeout(() => {
-          if (player instanceof Bot) {
-            player.botTakeTurn();
-          } else {
-            console.warn(
-              "Player is marked as bot but is not an instance of Bot."
-            );
-          }
-        }, 1000);
-      }
-    },
-  },
-);
+  }
+});
