@@ -17,6 +17,7 @@ export interface IGame {
   gameId: string;
   currentHand: IHand | null;
   winner?: Player;
+  gameState: "waiting" | "in-progress" | "finished";
 
   createGame(players: Player[], gameId: string): IGame;
 

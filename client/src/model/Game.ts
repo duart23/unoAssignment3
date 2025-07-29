@@ -6,6 +6,7 @@ export class Game implements IGame {
   gameId: string;
   currentHand: IHand | null = null;
   winner?: Player;
+  gameState: "waiting" | "in-progress" | "finished" = "waiting";
 
 
   constructor(players: Player[], gameId: string) {

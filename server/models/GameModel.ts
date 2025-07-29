@@ -3,7 +3,7 @@ import { HandSchema } from "./HandModel";
 
 const GameSchema = new mongoose.Schema(
   {
-    players: [{ type: mongoose.Schema.Types.ObjectId, ref: "PlayerModel" }],
+    players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
     gameId: { type: String, required: true, unique: true },
     winner: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,7 +15,7 @@ const GameSchema = new mongoose.Schema(
       enum: ["waiting", "playing", "finished"],
       default: "waiting",
     },
-    hands: { type: [HandSchema], default: [] },
+    hands: { type: [HandSchema], default: []},
   },
   { timestamps: true }
 );

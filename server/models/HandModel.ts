@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import { ICard } from "../interfaces/IDeck";
 
 export const HandSchema = new mongoose.Schema({
-  handId: { type: String, required: true, unique: true },
   currentPlayerIndex: { type: Number, required: true },
   deck: { type: Array<ICard>, required: true },
   discardPile: { type: Array<ICard>, required: true },

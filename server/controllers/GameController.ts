@@ -11,6 +11,7 @@ export async function createGameHandler(req: Request, res: Response) {
   }
 }
 
+
 export async function joinGameHandler(req: Request, res: Response) {
   try {
     const { playerId, gameId } = req.body;

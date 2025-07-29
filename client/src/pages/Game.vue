@@ -26,7 +26,7 @@ function startGame() {
 <template>
   <div class="gameSetupContainer">
     <div class="gameId">
-      <h1>Game Id {{ gameStore.game?.gameId }}</h1>
+      <h1>Game Id {{ gameStore.currentGame?.gameId }}</h1>
     </div>
     <div class="gameSetup">
       <div>
@@ -40,7 +40,7 @@ function startGame() {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="player in gameStore.game?.players" :key="player.name">
+              <tr v-for="player in gameStore.players" :key="player.name">
                 <td>{{ player.name }}</td>
                 <td>{{ player.score }}</td>
               </tr>

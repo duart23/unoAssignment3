@@ -11,25 +11,18 @@ import { usePlayerStore } from "./playerStores";
 
 export const useGameStore = defineStore("game", {
   state: () => ({
+    currentGame: null as IGame | null,
     players: [] as Player[],
-    currentHand: null as IHand | null,
     winner: undefined as Player | undefined,
     isGameOver: false  
   }),
 
   actions: {
-    async createNewGame() {
-      await apiCreateGame();
-    },
-
-    async joinGame(gameId: string) {
-      const playerStore = usePlayerStore();
-      const playerId = playerStore.player.playerId;
-      if(!playerId) {
-        throw new Error("No Player found");
-      } 
-      await apiJoinGame(playerId, gameId);
-    },
+    setCurrentGame(game: IGame) {
+      this.currentGame = game;
+      this.players = game.players;
+      this.winner = game.winner;
+    }
 
   }
 });

@@ -10,14 +10,23 @@ export async function createHand(gameId: string) {
   const game = await GameModel.findById(gameId);
   if (!game) throw new Error("Game not found");
 
-  const hand = new Hand(gameId);
+  const hand = new HandModel({
+    handId: Math.floor(Math.random() * 1000000).toString(), 
+    currentPlayerIndex: 0,
+    deck: [],
+    discardPile: [],
+    direction: 1,
+    winner: null,
+    score: 0,
+    gameId: game.gameId,
+  });
 
   // Save hand and attach it to the game
-  const newHand = await HandModel.create(hand);
-  game.hands.push(newHand._id);
+  await HandModel.create(hand);
+  game.hands.push(hand._id);
   await game.save();
 
-  return newHand;
+  return hand;
 }
 
 export async function getHandById(handId: string) {
