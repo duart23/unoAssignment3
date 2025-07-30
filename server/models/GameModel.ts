@@ -15,7 +15,7 @@ const GameSchema = new mongoose.Schema(
       enum: ["waiting", "playing", "finished"],
       default: "waiting",
     },
-    hands: { type: [HandSchema], default: []},
+    hands: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hand' }],
   },
   { timestamps: true }
 );

@@ -6,9 +6,14 @@ export const HandSchema = new mongoose.Schema({
   deck: { type: Array<ICard>, required: true },
   discardPile: { type: Array<ICard>, required: true },
   direction: { type: Number, default: 1 },
-  winner: { type: mongoose.Schema.Types.ObjectId, ref: "Player", default: null },
+  winner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Player",
+    default: null,
+  },
   score: { type: Number, default: 0 },
   gameId: { type: mongoose.Schema.Types.String, ref: "GameId", default: null },
+  players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
 });
 
 const HandModel = mongoose.model("Hand", HandSchema);

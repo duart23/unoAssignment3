@@ -9,24 +9,36 @@ export class Hand implements IHand {
   discardPile: ICard[];
   direction: 1 | -1;
   gameId: string;
-  game: IGame | null = null;
-  players: Player[] = [];
+  game: IGame;
+  winner?: string;
+  score?: number;
+  _id: string;
+  players: Player[];
 
-  constructor(gameId: string) {
-    this.gameId = gameId;
-    this.deck = [] as unknown as IDeck;
-    this.currentPlayerIndex = 0;
-    this.discardPile = [];
-    this.direction = 1;
+  constructor(gameId: string, game: IGame) {
+      this.gameId = gameId;
+      this.deck = [] as unknown as IDeck;
+      this.currentPlayerIndex = 0;
+      this.players = [];
+      this.discardPile = [];
+      this.direction = 1;
+      this.game = game;
+      this.winner = undefined;
+      this.score = 0;
+      this._id = ""; 
   }
+
+  static fromData(data: IHand): Hand {
+  const hand = new Hand(data.gameId, data.game);
+  Object.assign(hand, data);
+  return hand; 
+}
 
   startHand(): void {
     this.deck = new Deck();
     this.deck.initializeDeck();
     this.deck.shuffleDeck();
     this.direction = 1;
-
-    
 
     for (let i = 0; i < 7; i++) {
       this.players.forEach((player) => {
@@ -215,7 +227,7 @@ export class Hand implements IHand {
   }
 
   // botTakeTurn(): void {
-  //   const currentPlayer = this.players[this.currentPlayerIndex];
+  //   const currentPlayer = players[this.currentPlayerIndex];
   //   if (currentPlayer.isBot && currentPlayer instanceof Bot) {
   //     currentPlayer.botTakeTurn(); // Call Bot-specific logic
   //   }

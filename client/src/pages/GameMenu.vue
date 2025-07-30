@@ -5,7 +5,7 @@ import { useRouter } from "vue-router";
 import type { IGame, Player } from "@/interfaces/IGame";
 import { Bot } from "@/model/Bot";
 import { apiCreateGame, apiGetAllGames, apiGetGameById, apiJoinGame } from "@/api/useGameApi";
-import { usePlayerStore } from "@/stores/playerStores";
+import { usePlayerStore } from "@/stores/playerStore";
 
 const gameStore = useGameStore();
 const playerStore = usePlayerStore();
@@ -34,7 +34,6 @@ async function joinGame(gameId: string) {
     // Check for success - depends on your API response structure
     if (response) {
       const game = await apiGetGameById(gameId);
-      gameStore.setCurrentGame(game);
       console.log("Joined game:", game);
       router.push(`/game/${gameId}`);
     } else {

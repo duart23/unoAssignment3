@@ -6,7 +6,12 @@ export interface IHand {
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1 ; // 1 for clockwise, -1 for counter-clockwise
-  gameId: string; // Reference to the game this hand belongs to
+  winner? : string;
+  score?: number;
+  gameId: string;
+  _id: string; // Reference to the game this hand belongs to
+  game: IGame;
+  players: Player[];
 
   // Starts a new Hand with the given players
   startHand(): void;

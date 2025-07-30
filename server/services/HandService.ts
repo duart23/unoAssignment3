@@ -1,24 +1,22 @@
 import { ICard } from "../interfaces/IDeck";
 import { Player } from "../interfaces/IGame";
-import { Deck } from "../logic/Deck";
-import { Hand } from "../logic/Hand";
 import GameModel from "../models/GameModel";
 import HandModel from "../models/HandModel";
 
 
 export async function createHand(gameId: string) {
-  const game = await GameModel.findById(gameId);
+  const game = await GameModel.findOne({ gameId: gameId });
   if (!game) throw new Error("Game not found");
 
   const hand = new HandModel({
-    handId: Math.floor(Math.random() * 1000000).toString(), 
     currentPlayerIndex: 0,
     deck: [],
     discardPile: [],
     direction: 1,
     winner: null,
     score: 0,
-    gameId: game.gameId,
+    gameId: gameId,
+    players: game.players,
   });
 
   // Save hand and attach it to the game

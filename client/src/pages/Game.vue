@@ -1,24 +1,61 @@
 <script setup lang="ts">
+import { apiGetGameById, apiUpdateGame } from "@/api/useGameApi";
+import { apiCreateHand } from "@/api/useHandApi";
+import { IGame } from "@/interfaces/IGame";
+import { Hand } from "@/model/Hand";
 import { useGameStore } from "@/stores/gameStore";
-import { useRouter } from "vue-router";
+import { usePlayerStore } from "@/stores/playerStore";
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const gameStore = useGameStore();
+const playerStore = usePlayerStore();
 const router = useRouter();
+const route = useRoute();
 
-function startGame() {
+const gameId = route.params.gameId;
 
-  if (!gameStore.game) {
+
+onMounted(async () => { 
+  if (!gameId) {
+    console.error("No current game found");
     return;
   }
+  try {
+    const game = await apiGetGameById(gameId as string);
+    gameStore.setCurrentGame(game);
+    console.log("Current game set:", gameStore.currentGame);
+  } catch (error) {
+    console.error("Error fetching game:", error);
+  }
+});
+
+async function startGame() {
+  console.log("Starting game...");
+
+  if(!gameStore.currentGame) {
+    throw new Error("No current game found");
+  }
+
   if (gameStore.players.length < 2) {
-    alert("At least two players are required to start the game.");
-    return;
+    throw new Error("At least two players are required to start the game.");
   }
-  gameStore.startGame(gameStore.players, gameStore.game?.gameId);
+  const newHand = await apiCreateHand(gameStore.currentGame.gameId);
 
-  setTimeout(() => {
-    router.push("/play-hand");
-  }, 500);
+   gameStore.currentGame.currentHand = Hand.fromData(newHand);
+    
+  gameStore.startNewHand(gameStore.players);
+
+  const updates : IGame = {
+    gameState : "in-progress",
+  }
+
+  await apiUpdateGame(gameId, updates )
+}
+
+   setTimeout(() => {
+     router.push(`/play-hand/${newHand._id}`);
+   }, 500);
   
 }
 </script>

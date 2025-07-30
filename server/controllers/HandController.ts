@@ -9,6 +9,7 @@ export async function createHandHandler(req: Request, res: Response) {
     res.status(201).json(hand);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Create hand failed:", error);
     res.status(500).json({ error: errorMessage });
   }
 }

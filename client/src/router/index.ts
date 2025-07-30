@@ -10,7 +10,7 @@ import Register from '@/pages/Register.vue';
 const routes = [
   { path: '/game-menu', component: GameMenu },
   {  path: '/game/:gameId', name: 'Game', component: Game },
-  { path: '/play-hand', component: PlayHand },
+  { path: '/play-hand/:_id', name: 'PlayHand', component: PlayHand },
   { path: '/game-over', component: GameOver },
   { path: '/login', component: Login },
   { path: '/register', component: Register }

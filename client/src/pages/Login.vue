@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePlayerStore } from "@/stores/playerStores";
+import { usePlayerStore } from "@/stores/playerStore";
 import { ref } from "vue";
 import { apiLoginPlayer } from "@/api/usePlayerApi";
 import { useRouter } from "vue-router";

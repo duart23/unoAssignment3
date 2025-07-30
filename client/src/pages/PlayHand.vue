@@ -1,54 +1,57 @@
 <script setup lang="ts">
+import { apiGetHandById } from "@/api/useHandApi";
 import PlayerHand from "@/components/PlayerHand.vue";
 import UnoCard from "@/components/UnoCard.vue";
 import { ICard, Type, Color } from "@/interfaces/IDeck";
+import { Hand } from "@/model/Hand";
 import { router } from "@/router";
 import { useGameStore } from "@/stores/gameStore";
-import { ref, watch } from "vue";
+import { usePlayerStore } from "@/stores/playerStore";
+import { resourceUsage } from "process";
+import { onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 
 const gameStore = useGameStore();
+const playerStore = usePlayerStore();
 
-if (!gameStore.game?.currentHand) {
-  throw new Error("Game not found. Please start a game first.");
-}
+const route = useRoute();
+const handId = route.params._id;
 
-const currentHand = gameStore.game?.currentHand;
+onMounted(async () => {
+  if (!handId) {
+    console.error("No current hand found");
+    return;
+  }
+  if (!gameStore.currentGame) {
+    throw new Error("Something went wrong!");
+  }
+
+  try {
+    const hand = await apiGetHandById(handId as string);
+    gameStore.currentGame.currentHand = hand;
+    console.log("Fetched hand:", gameStore.currentGame.currentHand);
+  } catch (error) {
+    console.error("Error fetching game:", error);
+  }
+});
+
+const currentHand = gameStore.currentGame?.currentHand;
 
 const openPickColor = ref(false);
 const cardToPickColor = ref<ICard | null>(null);
 const waitingForColor = ref(false);
 
-watch(
-  () => gameStore.game?.currentHand?.currentPlayerIndex,
-  () => {
-    const player = gameStore.players?.[currentHand.currentPlayerIndex];
-    if (!player || !player.isBot) return;
-
-    gameStore.checkBotTurn(player);
-
-    if (player.playerHand?.length === 0) {
-      gameStore.endGame(player);
-
-      if (gameStore.winner) {
-        console.log("Game Over! Winner:", gameStore.winner.name);
-        router.push("/game-over");
-        return;
-      }
-
-      router.push("/game");
-    }
-  },
-  { immediate: true }
-);
-
 function drawCard() {
+  if (!currentHand) return;
+
   const player = gameStore.players[currentHand.currentPlayerIndex];
   if (!player || player.isBot) return;
   currentHand.drawCard(player);
-  gameStore.game?.currentHand?.nextPlayer();
+  currentHand.nextPlayer();
 }
 
 function chooseColor(card: ICard | null, color: Color) {
+  if (!currentHand) return;
   if (!card) return;
   console.log(card.type);
   currentHand.applyCardEffect(card, color);
@@ -59,6 +62,7 @@ function chooseColor(card: ICard | null, color: Color) {
 }
 
 function playCard(card: ICard) {
+  if (!currentHand) return;
   const player = gameStore.players[currentHand.currentPlayerIndex];
   if (!player) return;
 
@@ -88,7 +92,7 @@ function playCard(card: ICard) {
     }
 
     if (player.playerHand.length === 0) {
-      gameStore.endGame(player);
+      // gameStore.endGame(player);
 
       if (gameStore.winner) {
         console.log("Game Over! Winner:", gameStore.winner.name);
@@ -103,69 +107,69 @@ function playCard(card: ICard) {
 function getPositionClass(index: number): string {
   const total = gameStore.players.length;
   if (total === 2) {
-    return index === 0 ? 'bottom' : 'top';
+    return index === 0 ? "bottom" : "top";
   }
   if (total === 3) {
-    return ['bottom', 'left', 'top'][index];
+    return ["bottom", "left", "top"][index];
   }
   if (total === 4) {
-    return ['bottom', 'left', 'top', 'right'][index];
+    return ["bottom", "left", "top", "right"][index];
   }
-  return '';
+  return "";
 }
-
 </script>
 
 <template>
-  <PlayerHand
-    v-for="(player, index) in gameStore.players"
-    :key="index"
-    :cards="player.playerHand"
-    :player="player"
-    :disabled="waitingForColor"
-    :class="[getPositionClass(index), { 'non-clickable': player.isBot }]"
-    @playCard="playCard"
-  />
+  <div v-if="currentHand">
+    <PlayerHand
+      v-for="(player, index) in currentHand.players"
+      :key="index"
+      :cards="player.playerHand"
+      :player="player"
+      :disabled="waitingForColor"
+      :class="[getPositionClass(index), { 'non-clickable':  player.isBot}]"
+      @playCard="playCard"
+    />
 
-  <div class="gameState">
-    <div class="gameCenter">
-      <div class="discardPile">
-        <UnoCard
-          v-if="currentHand?.discardPile[currentHand.discardPile.length - 1]"
-          :card="currentHand?.discardPile[currentHand.discardPile.length - 1]"
+    <div class="gameState">
+      <div class="gameCenter">
+        <div class="discardPile">
+          <UnoCard
+            v-if="currentHand?.discardPile[currentHand.discardPile.length - 1]"
+            :card="currentHand?.discardPile[currentHand.discardPile.length - 1]"
+          />
+        </div>
+        <img
+          v-if="currentHand.deck.cards.length > 0"
+          src="@/assets/uno-back.png"
+          alt="Draw Pile"
+          class="drawPileImage"
         />
       </div>
-      <img
-        v-if="currentHand.deck.cards.length > 0"
-        src="@/assets/uno-back.png"
-        alt="Draw Pile"
-        class="drawPileImage"
-      />
-    </div>
-    <div class="currentPlayer">
-      Current Player:
-      {{ gameStore.players[currentHand.currentPlayerIndex].name }}
-    </div>
-    <div class="gameActions">
-      <button @click="drawCard" :disabled="waitingForColor">Draw Card</button>
-      <button>Say Uno</button>
-    </div>
+      <div class="currentPlayer">
+        Current Player:
+        {{ gameStore.players[currentHand.currentPlayerIndex].name }}
+      </div>
+      <div class="gameActions">
+        <button @click="drawCard" :disabled="waitingForColor">Draw Card</button>
+        <button>Say Uno</button>
+      </div>
 
-    <div class="modal" v-if="openPickColor">
-      <button
-        v-for="color in Object.values(Color).filter((c) => c !== Color.BLACK)"
-        :key="color"
-        @click="chooseColor(cardToPickColor, color)"
-        :disabled="!cardToPickColor"
-      >
-        {{ color }}
-      </button>
+      <div class="modal" v-if="openPickColor">
+        <button
+          v-for="color in Object.values(Color).filter((c) => c !== Color.BLACK)"
+          :key="color"
+          @click="chooseColor(cardToPickColor, color)"
+          :disabled="!cardToPickColor"
+        >
+          {{ color }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-
 .bottom {
   position: absolute;
   bottom: 10px;
@@ -195,7 +199,7 @@ function getPositionClass(index: number): string {
   display: flex;
   justify-content: flex-end;
   top: 50%;
-   width: 40%;
+  width: 40%;
   right: 10px;
   transform: translateY(-50%);
 }
