@@ -1,5 +1,6 @@
 import axios from "axios";
 import { IGame } from "@/interfaces/IGame";
+import { IHand } from "@/interfaces/IHand";
 
 const API_BASE = "/api/games";
 
@@ -23,7 +24,17 @@ export async function apiGetGameById(gameId: string): Promise<IGame> {
   return response.data;
 }
 
-export async function apiUpdateGame(handId: string, updates: Partial<IGame>): Promise<IGame> {
-  const response = await axios.put(`${API_BASE}/update/${handId}`, updates);
+export async function apiUpdateGame(gameId: string, updates: Partial<IGame>): Promise<IGame> {
+  const response = await axios.put(`${API_BASE}/updateGame/${gameId}`, updates);
+  return response.data;
+}
+
+export async function apiLeaveGame(playerId: string, gameId: string): Promise<void> {
+  const response = await axios.put(`${API_BASE}/leave`, { playerId, gameId });
+  return response.data;
+}
+
+export async function apiGetCurrentHand(gameId: string): Promise<IHand> {
+  const response = await axios.get(`${API_BASE}/currentHand/${gameId}`);
   return response.data;
 }

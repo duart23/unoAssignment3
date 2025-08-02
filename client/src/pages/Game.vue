@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { apiGetGameById, apiUpdateGame } from "@/api/useGameApi";
-import { apiCreateHand } from "@/api/useHandApi";
+import { apiGetCurrentHand, apiGetGameById, apiLeaveGame, apiUpdateGame } from "@/api/useGameApi";
+import { apiCreateHand, apiGetHandById, apiUpdateHand } from "@/api/useHandApi";
 import { IGame } from "@/interfaces/IGame";
 import { Hand } from "@/model/Hand";
 import { useGameStore } from "@/stores/gameStore";
@@ -13,7 +13,7 @@ const playerStore = usePlayerStore();
 const router = useRouter();
 const route = useRoute();
 
-const gameId = route.params.gameId;
+const gameId = route.params.gameId.toString();
 
 
 onMounted(async () => { 
@@ -30,8 +30,41 @@ onMounted(async () => {
   }
 });
 
+async function leaveGame() {
+  try {
+    await apiLeaveGame(playerStore.player.playerId, gameId);
+    gameStore.setCurrentGame({} as IGame);
+    playerStore.setPlayer({ ...playerStore.player, gameId: "none" });
+    router.push("/game-menu");
+  } catch (error) {
+    console.error("Error leaving game:", error);
+    alert("An error occurred while leaving the game.");
+  }
+}
+
+async function joinOnGoingHand() {
+  if (!gameStore.currentGame) {
+    throw new Error("No current game found");
+  }
+  if (gameStore.currentGame.gameState === "in-progress" && gameStore.currentGame.currentHand) {
+    const currentHand = await apiGetCurrentHand(gameStore.currentGame.gameId);
+    console.log("Current Hand:", currentHand);
+    router.push(`/play-hand/${currentHand._id}`);
+  }
+  else {
+    alert("No ongoing hand to join.");
+  }
+
+}
+
 async function startGame() {
   console.log("Starting game...");
+
+  const game = await apiGetGameById(gameId);
+  if(game.gameState === "in-progress") {
+    alert("Game is already in progress.");
+    return;
+  }
 
   if(!gameStore.currentGame) {
     throw new Error("No current game found");
@@ -40,24 +73,30 @@ async function startGame() {
   if (gameStore.players.length < 2) {
     throw new Error("At least two players are required to start the game.");
   }
+
   const newHand = await apiCreateHand(gameStore.currentGame.gameId);
 
-   gameStore.currentGame.currentHand = Hand.fromData(newHand);
-    
-  gameStore.startNewHand(gameStore.players);
+  const hand = new Hand(newHand);
+  hand.startHand();
+  await apiUpdateHand(hand._id, hand);
 
-  const updates : IGame = {
-    gameState : "in-progress",
+  const updates: Partial<IGame> = {
+    gameState: "in-progress" as IGame["gameState"],
+    currentHand: hand,
   }
-
-  await apiUpdateGame(gameId, updates )
-}
-
-   setTimeout(() => {
-     router.push(`/play-hand/${newHand._id}`);
-   }, 500);
   
+  await apiUpdateGame(gameId, updates)
+  gameStore.setCurrentGame({
+    ...gameStore.currentGame,
+    gameState: "in-progress",
+    currentHand: newHand,
+  });
+
+  setTimeout(() => {
+    router.push(`/play-hand/${newHand._id}`);
+  }, 500);
 }
+
 </script>
 
 <template>
@@ -86,7 +125,11 @@ async function startGame() {
         </div>
       </div>
       <div class="gameSetupButton">
-        <Button @click="startGame">Start Game</Button>
+        <Button v-if="gameStore.currentGame?.gameState === 'waiting' " @click="startGame">Start Game</Button>
+        <Button v-if="gameStore.currentGame?.gameState === 'in-progress'" @click="joinOnGoingHand">Join Ongoing Hand</Button>
+      </div>
+      <div class="leaveGameButton">
+        <Button @click="leaveGame">Leave Game</Button>
       </div>
     </div>
   </div>

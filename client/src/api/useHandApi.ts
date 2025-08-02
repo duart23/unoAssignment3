@@ -9,12 +9,12 @@ export async function apiCreateHand(gameId: string): Promise<IHand> {
 }
 
 
-export async function apiGetHandById(_id: string): Promise<IHand> {
-  const response = await axios.get(`${API_BASE}/${_id}`);
+export async function apiGetHandById(handId: string): Promise<IHand> {
+  const response = await axios.get(`${API_BASE}/${handId}`);
   return response.data;
 }
 
-export async function apiUpdateHand(_id: string, updates: Partial<IHand>): Promise<IGame> {
-  const response = await axios.put(`${API_BASE}/update/${_id}`, updates);
+export async function apiUpdateHand(_id: string, updates: IHand): Promise<IGame> {
+  const response = await axios.put(`${API_BASE}/updateHand/${_id}`, updates);
   return response.data;
 }

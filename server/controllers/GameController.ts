@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createGame, getAllGames, getGameById, joinGame, updateGame } from "../services/GameService";
+import { createGame, getAllGames, getCurrentHand, getGameById, joinGame, leaveGame, updateGame } from "../services/GameService";
 
 export async function createGameHandler(req: Request, res: Response) {
   try {
@@ -48,11 +48,33 @@ export async function getGameByIdHandler(req: Request, res: Response) {
 }
 
 export async function updateGameHandler(req: Request, res: Response) {
-  const { handId } = req.params;
+  const { gameId } = req.params;
   const updates = req.body;
   try {
-    const updatedGame = await updateGame(handId, updates);
+    const updatedGame = await updateGame(gameId, updates);
     res.status(200).json(updatedGame);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: errorMessage });
+  }
+}
+
+export async function leaveGameHandler(req: Request, res: Response) {
+  const { playerId, gameId } = req.body;
+  try {
+    await leaveGame(playerId, gameId);
+    res.status(200).json({ message: "Player left the game successfully" });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: errorMessage });
+  }
+}
+
+export async function getCurrentHandHandler(req: Request, res: Response) {
+  const { gameId } = req.params;
+  try {
+    const currentHand = await getCurrentHand(gameId);
+    res.status(200).json(currentHand);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: errorMessage });

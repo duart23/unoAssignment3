@@ -15,55 +15,54 @@ const gameStore = useGameStore();
 const playerStore = usePlayerStore();
 
 const route = useRoute();
-const handId = route.params._id;
+const handId = route.params._id.toString();
 
 onMounted(async () => {
+  if (!gameStore.currentGame) {
+    console.error("No current game found");
+    return;
+  }
   if (!handId) {
     console.error("No current hand found");
     return;
   }
-  if (!gameStore.currentGame) {
-    throw new Error("Something went wrong!");
+  const hand = await apiGetHandById(handId);
+  if (!hand) {
+    console.error("Hand not found");
+    return;
   }
-
-  try {
-    const hand = await apiGetHandById(handId as string);
-    gameStore.currentGame.currentHand = hand;
-    console.log("Fetched hand:", gameStore.currentGame.currentHand);
-  } catch (error) {
-    console.error("Error fetching game:", error);
-  }
+  gameStore.currentGame.currentHand = new Hand(hand);
 });
 
-const currentHand = gameStore.currentGame?.currentHand;
+
 
 const openPickColor = ref(false);
 const cardToPickColor = ref<ICard | null>(null);
 const waitingForColor = ref(false);
 
 function drawCard() {
-  if (!currentHand) return;
+  if (!gameStore.currentGame?.currentHand) return;
 
-  const player = gameStore.players[currentHand.currentPlayerIndex];
+  const player = gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex];
   if (!player || player.isBot) return;
-  currentHand.drawCard(player);
-  currentHand.nextPlayer();
+  gameStore.currentGame.currentHand.drawCard(player);
+  gameStore.currentGame.currentHand.nextPlayer();
 }
 
 function chooseColor(card: ICard | null, color: Color) {
-  if (!currentHand) return;
+  if (!gameStore.currentGame?.currentHand) return;
   if (!card) return;
   console.log(card.type);
-  currentHand.applyCardEffect(card, color);
+  gameStore.currentGame.currentHand.applyCardEffect(card, color);
   openPickColor.value = false;
   cardToPickColor.value = null;
   waitingForColor.value = false;
-  currentHand?.nextPlayer();
+  gameStore.currentGame.currentHand.nextPlayer();
 }
 
 function playCard(card: ICard) {
-  if (!currentHand) return;
-  const player = gameStore.players[currentHand.currentPlayerIndex];
+  if (!gameStore.currentGame?.currentHand) return;
+  const player = gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex];
   if (!player) return;
 
   if (!player.playerHand?.includes(card)) {
@@ -76,7 +75,7 @@ function playCard(card: ICard) {
     return;
   }
 
-  const isValidMove = currentHand.playCard(card, player);
+  const isValidMove = gameStore.currentGame.currentHand.playCard(card, player);
 
   if (!isValidMove) {
     console.error("Invalid move attempted with card:", card);
@@ -87,8 +86,8 @@ function playCard(card: ICard) {
       openPickColor.value = true;
       waitingForColor.value = true;
     } else {
-      currentHand.applyCardEffect(card);
-      currentHand?.nextPlayer();
+      gameStore.currentGame.currentHand.applyCardEffect(card);
+      gameStore.currentGame.currentHand.nextPlayer();
     }
 
     if (player.playerHand.length === 0) {
@@ -120,9 +119,9 @@ function getPositionClass(index: number): string {
 </script>
 
 <template>
-  <div v-if="currentHand">
+  <div v-if="gameStore.currentGame?.currentHand">
     <PlayerHand
-      v-for="(player, index) in currentHand.players"
+      v-for="(player, index) in gameStore.currentGame.currentHand.players"
       :key="index"
       :cards="player.playerHand"
       :player="player"
@@ -135,12 +134,12 @@ function getPositionClass(index: number): string {
       <div class="gameCenter">
         <div class="discardPile">
           <UnoCard
-            v-if="currentHand?.discardPile[currentHand.discardPile.length - 1]"
-            :card="currentHand?.discardPile[currentHand.discardPile.length - 1]"
+            v-if="gameStore.currentGame?.currentHand?.discardPile[gameStore.currentGame.currentHand.discardPile.length - 1]"
+            :card="gameStore.currentGame?.currentHand?.discardPile[gameStore.currentGame.currentHand.discardPile.length - 1]"
           />
         </div>
         <img
-          v-if="currentHand.deck.cards.length > 0"
+          v-if="gameStore.currentGame?.currentHand?.deck.cards.length > 0"
           src="@/assets/uno-back.png"
           alt="Draw Pile"
           class="drawPileImage"
@@ -148,7 +147,7 @@ function getPositionClass(index: number): string {
       </div>
       <div class="currentPlayer">
         Current Player:
-        {{ gameStore.players[currentHand.currentPlayerIndex].name }}
+        {{ gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex].name }}
       </div>
       <div class="gameActions">
         <button @click="drawCard" :disabled="waitingForColor">Draw Card</button>

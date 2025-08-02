@@ -39,3 +39,11 @@ export async function updatePlayer(
 export async function getPlayerById(playerId: string) {
   return PlayerModel.findOne({ playerId });
 }
+
+export async function removeGameFromPlayer(playerId: string) {
+  const player = await PlayerModel.findOne({ playerId });
+
+  if (!player) throw new Error("Player not found");
+    player.gameId = "none";
+    await player.save();
+}

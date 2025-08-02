@@ -1,5 +1,6 @@
 import { ICard } from "../interfaces/IDeck";
 import { Player } from "../interfaces/IGame";
+import { IHand } from "../interfaces/IHand";
 import GameModel from "../models/GameModel";
 import HandModel from "../models/HandModel";
 
@@ -28,21 +29,14 @@ export async function createHand(gameId: string) {
 }
 
 export async function getHandById(handId: string) {
-  const hand = await HandModel.findOne({ handId });
+  const hand = await HandModel.findOne({ _id: handId });
   if (!hand) throw new Error("Hand not found");
   return hand;
 }
 
 export async function updateHand(
   handId: string,
-  updates: Partial<{
-    currentPlayerIndex: number;
-    deck: ICard[];
-    discardPile: ICard[];
-    direction: number;
-    winner: Player;
-    score: number;
-  }>
+  updates: IHand
 ) {
   const hand = await HandModel.findOne({ _id: handId });
   if (!hand) throw new Error("Hand not found");

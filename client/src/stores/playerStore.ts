@@ -13,6 +13,7 @@ export const usePlayerStore = defineStore("player", {
       hasCalledUno: false as boolean,
       _id: "",
       password: "",
+      gameId: "" as string | "none" | null, 
     }
   }),
   actions: {

@@ -3,12 +3,14 @@ import { IHand } from "../interfaces/IHand";
 
 export interface Player {
   name: string;
-  playerHand?: ICard[];
+  playerHand: ICard[];
   score: number;
   hasCalledUno: boolean;
-  isBot? : boolean;
-  game?  : IGame; 
-  
+  isBot: boolean;
+  _id: string;
+  playerId: string;
+  password: string;
+  gameId: string | "none" | null;
 }
   
 export interface IGame {

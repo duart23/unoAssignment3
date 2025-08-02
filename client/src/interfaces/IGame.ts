@@ -10,6 +10,7 @@ export interface Player {
   _id: string;
   playerId: string;
   password: string;
+  gameId: string | "none" | null;
 }
   
 export interface IGame {

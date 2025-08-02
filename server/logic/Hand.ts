@@ -15,24 +15,18 @@ export class Hand implements IHand {
   _id: string;
   players: Player[];
 
-  constructor(gameId: string, game: IGame) {
-      this.gameId = gameId;
-      this.deck = [] as unknown as IDeck;
-      this.currentPlayerIndex = 0;
-      this.players = game.players || [];
-      this.discardPile = [];
-      this.direction = 1;
-      this.game = game;
-      this.winner = undefined;
-      this.score = 0;
-      this._id = ""; 
+  constructor(hand: Hand) {
+    this.currentPlayerIndex = hand.currentPlayerIndex;
+    this.deck = hand.deck;
+    this.discardPile = hand.discardPile;
+    this.direction = hand.direction;
+    this.gameId = hand.gameId;
+    this.game = hand.game;
+    this.winner = hand.winner;
+    this.score = hand.score;
+    this._id = hand._id;
+    this.players = hand.players;
   }
-
-  static fromData(data: IHand): Hand {
-  const hand = new Hand(data.gameId, data.game);
-  Object.assign(hand, data);
-  return hand; 
-}
 
   startHand(): void {
     this.deck = new Deck();

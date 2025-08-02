@@ -31,7 +31,6 @@ async function createGame() {
 async function joinGame(gameId: string) {
   try {
     const response = await apiJoinGame(playerStore.player.playerId, gameId);
-    // Check for success - depends on your API response structure
     if (response) {
       const game = await apiGetGameById(gameId);
       console.log("Joined game:", game);

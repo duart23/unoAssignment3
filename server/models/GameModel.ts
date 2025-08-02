@@ -12,10 +12,11 @@ const GameSchema = new mongoose.Schema(
     },
     gameState: {
       type: String,
-      enum: ["waiting", "playing", "finished"],
+      enum: ["waiting", "in-progress", "finished"],
       default: "waiting",
     },
-    hands: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hand' }],
+    hands: [{ type: mongoose.Schema.Types.ObjectId, ref: "Hand" }],
+    currentHand: { type: mongoose.Schema.Types.ObjectId, ref: "Hand", default: null },
   },
   { timestamps: true }
 );
