@@ -16,8 +16,7 @@ async function handleLogin() {
   const player = await apiCreatePlayer(name.value, password.value);
   if (player) {
     console.log("Registered player:", player);
-    playerStore.setPlayer(player);
-    router.push("/game-menu");
+    router.push("/");
 
   }
 }

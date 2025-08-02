@@ -44,14 +44,14 @@ export class Hand implements IHand {
     do {
       this.discardPile.push(this.deck.dealCard());
       if (
-        this.discardPile[0].type === "wild" ||
-        this.discardPile[0].type === "wild_draw_four"
+        this.discardPile[0].type === Type.WILD ||
+        this.discardPile[0].type === Type.WILD_DRAW_FOUR
       ) {
         this.deck.cards.push(this.discardPile.pop()!);
       }
     } while (
-      this.discardPile[0].type === "wild" ||
-      this.discardPile[0].type === "wild_draw_four"
+      this.discardPile[0].type === Type.WILD ||
+      this.discardPile[0].type === Type.WILD_DRAW_FOUR
     );
 
     this.currentPlayerIndex = Math.floor(Math.random() * (this.players.length ?? 0));

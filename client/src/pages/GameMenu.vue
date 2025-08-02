@@ -6,8 +6,10 @@ import type { IGame, Player } from "@/interfaces/IGame";
 import { Bot } from "@/model/Bot";
 import { apiCreateGame, apiGetAllGames, apiGetGameById, apiJoinGame } from "@/api/useGameApi";
 import { usePlayerStore } from "@/stores/playerStore";
+import { useSocketStore } from "@/stores/socketStore";
 
 const gameStore = useGameStore();
+const socketStore = useSocketStore();
 const playerStore = usePlayerStore();
 const router = useRouter();
 
@@ -31,9 +33,8 @@ async function createGame() {
 async function joinGame(gameId: string) {
   try {
     const response = await apiJoinGame(playerStore.player.playerId, gameId);
-    if (response) {
-      const game = await apiGetGameById(gameId);
-      console.log("Joined game:", game);
+    if (response) {    
+      socketStore.joinGame(gameId, playerStore.player.playerId);
       router.push(`/game/${gameId}`);
     } else {
       alert("Failed to join game");
@@ -85,6 +86,7 @@ onMounted(fetchGames);
         <p>Name: {{ playerStore.player.name }}</p>
         <p>Player ID: {{ playerStore.player.playerId }}</p>
       </div>
+      <button @click="fetchGames">Refresh Games</button>
       <button @click="createGame">Create Game</button>
     </div>
   </div>

@@ -12,7 +12,7 @@ const routes = [
   {  path: '/game/:gameId', name: 'Game', component: Game },
   { path: '/play-hand/:_id', name: 'PlayHand', component: PlayHand },
   { path: '/game-over', component: GameOver },
-  { path: '/login', component: Login },
+  { path: '/', component: Login },
   { path: '/register', component: Register }
 ];
 

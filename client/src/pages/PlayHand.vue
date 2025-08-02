@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { apiGetCurrentHand } from "@/api/useGameApi";
 import { apiGetHandById } from "@/api/useHandApi";
+import { apiUpdatePlayer } from "@/api/usePlayerApi";
 import PlayerHand from "@/components/PlayerHand.vue";
 import UnoCard from "@/components/UnoCard.vue";
 import { ICard, Type, Color } from "@/interfaces/IDeck";
@@ -7,17 +9,19 @@ import { Hand } from "@/model/Hand";
 import { router } from "@/router";
 import { useGameStore } from "@/stores/gameStore";
 import { usePlayerStore } from "@/stores/playerStore";
-import { resourceUsage } from "process";
+import { useSocketStore } from "@/stores/socketStore";
 import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const gameStore = useGameStore();
 const playerStore = usePlayerStore();
+const socketStore = useSocketStore();
 
 const route = useRoute();
-const handId = route.params._id.toString();
+
 
 onMounted(async () => {
+  const handId = route.params._id.toString();
   if (!gameStore.currentGame) {
     console.error("No current game found");
     return;
@@ -31,10 +35,9 @@ onMounted(async () => {
     console.error("Hand not found");
     return;
   }
-  gameStore.currentGame.currentHand = new Hand(hand);
+
+  gameStore.currentGame.currentHand = hand;
 });
-
-
 
 const openPickColor = ref(false);
 const cardToPickColor = ref<ICard | null>(null);
@@ -43,7 +46,8 @@ const waitingForColor = ref(false);
 function drawCard() {
   if (!gameStore.currentGame?.currentHand) return;
 
-  const player = gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex];
+  const player =
+    gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex];
   if (!player || player.isBot) return;
   gameStore.currentGame.currentHand.drawCard(player);
   gameStore.currentGame.currentHand.nextPlayer();
@@ -62,7 +66,8 @@ function chooseColor(card: ICard | null, color: Color) {
 
 function playCard(card: ICard) {
   if (!gameStore.currentGame?.currentHand) return;
-  const player = gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex];
+  const player =
+    gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex];
   if (!player) return;
 
   if (!player.playerHand?.includes(card)) {
@@ -121,12 +126,9 @@ function getPositionClass(index: number): string {
 <template>
   <div v-if="gameStore.currentGame?.currentHand">
     <PlayerHand
-      v-for="(player, index) in gameStore.currentGame.currentHand.players"
-      :key="index"
-      :cards="player.playerHand"
-      :player="player"
+      :player="playerStore.player"
+      :cards="playerStore.player.playerHand"
       :disabled="waitingForColor"
-      :class="[getPositionClass(index), { 'non-clickable':  player.isBot}]"
       @playCard="playCard"
     />
 
@@ -134,12 +136,20 @@ function getPositionClass(index: number): string {
       <div class="gameCenter">
         <div class="discardPile">
           <UnoCard
-            v-if="gameStore.currentGame?.currentHand?.discardPile[gameStore.currentGame.currentHand.discardPile.length - 1]"
-            :card="gameStore.currentGame?.currentHand?.discardPile[gameStore.currentGame.currentHand.discardPile.length - 1]"
+            v-if="
+              gameStore.currentGame?.currentHand?.discardPile[
+                gameStore.currentGame.currentHand.discardPile.length - 1
+              ]
+            "
+            :card="
+              gameStore.currentGame?.currentHand?.discardPile[
+                gameStore.currentGame.currentHand.discardPile.length - 1
+              ]
+            "
           />
         </div>
         <img
-          v-if="gameStore.currentGame?.currentHand?.deck.cards.length > 0"
+          v-if="gameStore.currentGame?.currentHand?.deck?.cards?.length > 0"
           src="@/assets/uno-back.png"
           alt="Draw Pile"
           class="drawPileImage"
@@ -147,7 +157,11 @@ function getPositionClass(index: number): string {
       </div>
       <div class="currentPlayer">
         Current Player:
-        {{ gameStore.players[gameStore.currentGame.currentHand.currentPlayerIndex].name }}
+        {{
+          gameStore.currentGame.currentHand.players[
+            gameStore.currentGame.currentHand.currentPlayerIndex
+          ].name
+        }}
       </div>
       <div class="gameActions">
         <button @click="drawCard" :disabled="waitingForColor">Draw Card</button>

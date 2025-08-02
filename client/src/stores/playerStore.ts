@@ -21,6 +21,7 @@ export const usePlayerStore = defineStore("player", {
     setPlayer(player: Player) {
         this.player = player;
     },
+
   },
   persist: true,
 });

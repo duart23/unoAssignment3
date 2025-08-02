@@ -3,23 +3,25 @@ import { usePlayerStore } from "@/stores/playerStore";
 import { ref } from "vue";
 import { apiLoginPlayer } from "@/api/usePlayerApi";
 import { useRouter } from "vue-router";
+import { useSocketStore } from "@/stores/socketStore";
+
 
 const name = ref("");
 const password = ref("");
 const error = ref("");
 
 const router = useRouter();
-
+const socketStore = useSocketStore();
 const playerStore = usePlayerStore();
 
 async function handleLogin() {
   const player = await apiLoginPlayer(name.value, password.value);
-  if (player) {
-    console.log("Logged in player:", player);
-    playerStore.setPlayer(player);
-    router.push("/game-menu");
+  if (!player) return;
 
-  }
+  playerStore.setPlayer(player);
+  socketStore.connect(player.playerId);
+
+  router.push("/game-menu");
 }
 </script>
 
@@ -38,12 +40,19 @@ async function handleLogin() {
       <button type="submit">Login</button>
       <p v-if="error" class="error">{{ error }}</p>
     </form>
+    <div>
+      <p>
+        Don't have an account?
+        <router-link to="/register">Register here</router-link>
+      </p>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .login-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 80vh;

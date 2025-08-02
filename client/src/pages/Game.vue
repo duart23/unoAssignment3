@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { apiGetCurrentHand, apiGetGameById, apiLeaveGame, apiUpdateGame } from "@/api/useGameApi";
+import {
+  apiGetCurrentHand,
+  apiGetGameById,
+  apiLeaveGame,
+  apiUpdateGame,
+} from "@/api/useGameApi";
 import { apiCreateHand, apiGetHandById, apiUpdateHand } from "@/api/useHandApi";
 import { IGame } from "@/interfaces/IGame";
 import { Hand } from "@/model/Hand";
 import { useGameStore } from "@/stores/gameStore";
 import { usePlayerStore } from "@/stores/playerStore";
+import { useSocketStore } from "@/stores/socketStore";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const gameStore = useGameStore();
 const playerStore = usePlayerStore();
+const socketStore = useSocketStore();
 const router = useRouter();
 const route = useRoute();
 
 const gameId = route.params.gameId.toString();
 
-
-onMounted(async () => { 
+onMounted(async () => {
   if (!gameId) {
     console.error("No current game found");
     return;
@@ -33,7 +39,7 @@ onMounted(async () => {
 async function leaveGame() {
   try {
     await apiLeaveGame(playerStore.player.playerId, gameId);
-    gameStore.setCurrentGame({} as IGame);
+    socketStore.leaveGame(gameId, playerStore.player.playerId);
     playerStore.setPlayer({ ...playerStore.player, gameId: "none" });
     router.push("/game-menu");
   } catch (error) {
@@ -46,27 +52,26 @@ async function joinOnGoingHand() {
   if (!gameStore.currentGame) {
     throw new Error("No current game found");
   }
-  if (gameStore.currentGame.gameState === "in-progress" && gameStore.currentGame.currentHand) {
+  if (
+    gameStore.currentGame.gameState === "in-progress" &&
+    gameStore.currentGame.currentHand
+  ) {
     const currentHand = await apiGetCurrentHand(gameStore.currentGame.gameId);
     console.log("Current Hand:", currentHand);
     router.push(`/play-hand/${currentHand._id}`);
-  }
-  else {
+  } else {
     alert("No ongoing hand to join.");
   }
-
 }
 
 async function startGame() {
-  console.log("Starting game...");
-
   const game = await apiGetGameById(gameId);
-  if(game.gameState === "in-progress") {
+  if (game.gameState === "in-progress") {
     alert("Game is already in progress.");
     return;
   }
 
-  if(!gameStore.currentGame) {
+  if (!gameStore.currentGame) {
     throw new Error("No current game found");
   }
 
@@ -83,20 +88,39 @@ async function startGame() {
   const updates: Partial<IGame> = {
     gameState: "in-progress" as IGame["gameState"],
     currentHand: hand,
-  }
-  
-  await apiUpdateGame(gameId, updates)
+  };
+
+  await apiUpdateGame(gameId, updates);
   gameStore.setCurrentGame({
     ...gameStore.currentGame,
     gameState: "in-progress",
     currentHand: newHand,
   });
 
+  socketStore.startHand(gameId);
+
   setTimeout(() => {
     router.push(`/play-hand/${newHand._id}`);
   }, 500);
 }
 
+if (socketStore.socket) {
+  socketStore.socket.on("handStarted", async ({ handId }) => {
+    console.log("Hand started with ID:", handId);
+
+    if(!gameStore.currentGame) {
+      console.error("No current game found");
+      return;
+    }
+    const currentHand = await apiGetCurrentHand(gameId);
+    gameStore.currentGame.currentHand = new Hand(currentHand);
+
+
+    setTimeout(() => {
+      router.push(`/play-hand/${handId}`);
+    }, 500);
+  });
+}
 </script>
 
 <template>
@@ -125,8 +149,16 @@ async function startGame() {
         </div>
       </div>
       <div class="gameSetupButton">
-        <Button v-if="gameStore.currentGame?.gameState === 'waiting' " @click="startGame">Start Game</Button>
-        <Button v-if="gameStore.currentGame?.gameState === 'in-progress'" @click="joinOnGoingHand">Join Ongoing Hand</Button>
+        <Button
+          v-if="gameStore.currentGame?.gameState === 'waiting'"
+          @click="startGame"
+          >Start Game</Button
+        >
+        <Button
+          v-if="gameStore.currentGame?.gameState === 'in-progress'"
+          @click="joinOnGoingHand"
+          >Join Ongoing Hand</Button
+        >
       </div>
       <div class="leaveGameButton">
         <Button @click="leaveGame">Leave Game</Button>
@@ -161,17 +193,15 @@ async function startGame() {
   justify-content: center;
 }
 
-
 table {
   margin: 0 auto;
   border-collapse: collapse;
   width: 60%;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ccc;
   padding: 0.5rem 1rem;
 }
-
-
 </style>
