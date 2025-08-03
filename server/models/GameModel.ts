@@ -4,7 +4,6 @@ import { HandSchema } from "./HandModel";
 const GameSchema = new mongoose.Schema(
   {
     players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
-    gameId: { type: String, required: true, unique: true },
     winner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Player",

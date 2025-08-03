@@ -46,10 +46,10 @@ export async function updatePlayerHandler(req: Request, res: Response) {
 }
 
 export async function getPlayerByIdHandler(req: Request, res: Response){
-  const { playerId } = req.params;
+  const { _id } = req.params;
 
   try {
-      const player = await getPlayerById(playerId);
+      const player = await getPlayerById(_id);
       res.status(200).json(player);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

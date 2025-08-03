@@ -1,13 +1,15 @@
 import { ICard } from "../interfaces/IDeck";
+import { Player } from "../interfaces/IGame";
 import PlayerModel from "../models/PlayerModel";
 
 export async function createPlayer(name: string, password: string) {
   const newPlayer = new PlayerModel({
-    playerId: Math.floor(Math.random() * 1000000).toString(),
     name,
     password,
     isBot: false,
     score: 0,
+    playerHand: [] as ICard[],
+    game: null, 
   });
 
   await newPlayer.save();
@@ -19,16 +21,10 @@ export async function loginPlayer(name: string, password: string) {
 }
 
 export async function updatePlayer(
-  playerId: string,
-  updates: Partial<{
-    score: number;
-    playerHand: ICard[];
-    hasCalledUno: boolean;
-    isBot: boolean;
-    gameId: string;
-  }>
+  _id: string,
+  updates: Player 
 ) {
-  const player = await PlayerModel.findOne({ playerId });
+  const player = await PlayerModel.findOne({ _id });
   if (!player) throw new Error("Player not found");
 
   Object.assign(player, updates);
@@ -40,10 +36,10 @@ export async function getPlayerById(playerId: string) {
   return PlayerModel.findOne({ playerId });
 }
 
-export async function removeGameFromPlayer(playerId: string) {
-  const player = await PlayerModel.findOne({ playerId });
+export async function removeGameFromPlayer(_id: string) {
+  const player = await PlayerModel.findById({ _id });
 
   if (!player) throw new Error("Player not found");
-    player.gameId = "none";
+    player.game = null;
     await player.save();
 }

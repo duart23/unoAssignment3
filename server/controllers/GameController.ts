@@ -39,7 +39,7 @@ export async function getAllGamesHandler(req: Request, res: Response) {
 export async function getGameByIdHandler(req: Request, res: Response) {
   const { gameId } = req.params;
   try {
-    const game = await getGameById(Number(gameId));
+    const game = await getGameById(gameId);
     res.status(200).json(game);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

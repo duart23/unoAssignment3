@@ -4,15 +4,14 @@ import { IGame, Player } from "../interfaces/IGame";
 import { Deck } from "./Deck";
 
 export class Hand implements IHand {
+  _id: string;
   currentPlayerIndex: number;
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1;
-  gameId: string;
-  game: IGame;
+  game: IGame | string;
   winner?: string;
   score?: number;
-  _id: string;
   players: Player[];
 
   constructor(hand: Hand) {

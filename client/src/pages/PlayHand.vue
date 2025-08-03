@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { apiGetCurrentHand } from "@/api/useGameApi";
-import { apiGetHandById } from "@/api/useHandApi";
+import { apiGetHandById, apiUpdateHand } from "@/api/useHandApi";
 import { apiUpdatePlayer } from "@/api/usePlayerApi";
 import PlayerHand from "@/components/PlayerHand.vue";
 import UnoCard from "@/components/UnoCard.vue";
 import { ICard, Type, Color } from "@/interfaces/IDeck";
+import { Deck } from "@/model/Deck";
 import { Hand } from "@/model/Hand";
 import { router } from "@/router";
 import { useGameStore } from "@/stores/gameStore";

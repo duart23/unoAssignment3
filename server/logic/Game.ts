@@ -2,42 +2,24 @@ import { IGame, Player } from "../interfaces/IGame";
 import { IHand } from "../interfaces/IHand";
 
 export class Game implements IGame {
-  players: Player[];
-  gameId: string;
-  currentHand: IHand | null = null;
+  _id: string;
+  players: Player[] | string[];
   winner?: Player;
-  gameState: "waiting" | "in-progress" | "finished" = "waiting";
+  gameState: "waiting" | "in-progress" | "finished";
+  currentHand?: IHand;
+  hands?: IHand[] | string[];
 
-
-  constructor(players: Player[], gameId: string) {
-    this.players = players;
-    this.gameId = gameId;
-  }
-
-  createGame(players: Player[], gameId: string): IGame {
-    return new Game(players, gameId);
-  }
-
-  joinGame(gameId: string, player: Player): void {
-    if (!gameId) {
-      throw new Error("Game does not exist!");
-    }
-    this.players.push(player);
-  }
-
-  startGame(gameId: string): void {
-    if (!gameId) {
-      throw new Error("Game does not exist!");
-    }
-    if (this.players.length < 2) {
-      throw new Error("Not enough players to start the game!");
-    }
-    this.currentHand?.startHand();
+  constructor(game: IGame) {
+    this._id = game._id;
+    this.players = game.players;
+    this.winner = game.winner;
+    this.gameState = game.gameState;
+    this.currentHand = game.currentHand;
+    this.hands = [];
   }
 
   endHand(winningPlayer: Player): boolean {
-
-    console.log(winningPlayer.name)
+    console.log(winningPlayer.name);
     if (!this.currentHand) {
       throw new Error("No current hand to end.");
     }
@@ -53,10 +35,9 @@ export class Game implements IGame {
     }
 
     this.currentHand.discardPile = [];
-    this.players.forEach(p => {
+    this.players.forEach((p) => {
       p.playerHand = [];
-      p.hasCalledUno = false;
-    }); 
+    });
     return false;
   }
 

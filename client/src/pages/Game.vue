@@ -6,7 +6,9 @@ import {
   apiUpdateGame,
 } from "@/api/useGameApi";
 import { apiCreateHand, apiGetHandById, apiUpdateHand } from "@/api/useHandApi";
-import { IGame } from "@/interfaces/IGame";
+import { apiGetPlayerById, apiUpdatePlayer } from "@/api/usePlayerApi";
+import { IGame, Player } from "@/interfaces/IGame";
+import { IHand } from "@/interfaces/IHand";
 import { Hand } from "@/model/Hand";
 import { useGameStore } from "@/stores/gameStore";
 import { usePlayerStore } from "@/stores/playerStore";
@@ -64,6 +66,23 @@ async function joinOnGoingHand() {
   }
 }
 
+async function dealCardsToPlayers(hand: IHand) {
+  for (const _id of hand.players) {
+    const playerData = await apiGetPlayerById(_id); // ✅ use loop playerId
+    if (!playerData) continue;
+
+    for (let i = 0; i < 7; i++) {
+      const card = hand.deck.dealCard();
+      if (card) {
+        playerData.playerHand.push(card);
+      }
+    }
+
+    await apiUpdatePlayer(playerId, playerData);
+  }
+}
+
+
 async function startGame() {
   const game = await apiGetGameById(gameId);
   if (game.gameState === "in-progress") {
@@ -83,6 +102,9 @@ async function startGame() {
 
   const hand = new Hand(newHand);
   hand.startHand();
+
+  await dealCardsToPlayers(hand);
+
   await apiUpdateHand(hand._id, hand);
 
   const updates: Partial<IGame> = {

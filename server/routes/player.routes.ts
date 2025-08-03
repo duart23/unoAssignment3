@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post("/create", createPlayerHandler);
 router.post("/login", loginPlayerHandler);
-router.put("/updatePlayer/:playerId", updatePlayerHandler);
-router.put("/:playerId", getPlayerByIdHandler);
+router.put("/updatePlayer/:_id", updatePlayerHandler);
+router.put("/:_id", getPlayerByIdHandler);
 
 export default router;

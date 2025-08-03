@@ -6,7 +6,7 @@ import HandModel from "../models/HandModel";
 
 
 export async function createHand(gameId: string) {
-  const game = await GameModel.findOne({ gameId: gameId });
+  const game = await GameModel.findById({ _id: gameId });
   if (!game) throw new Error("Game not found");
 
   const hand = new HandModel({
@@ -16,7 +16,7 @@ export async function createHand(gameId: string) {
     direction: 1,
     winner: null,
     score: 0,
-    gameId: gameId,
+    game: game._id,
     players: game.players,
   });
 

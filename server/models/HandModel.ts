@@ -12,7 +12,7 @@ export const HandSchema = new mongoose.Schema({
     default: null,
   },
   score: { type: Number, default: 0 },
-  gameId: { type: mongoose.Schema.Types.String, ref: "GameId", default: null },
+  game: { type: mongoose.Schema.Types.ObjectId, ref: "Game", default: null },
   players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
 });
 

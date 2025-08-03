@@ -2,29 +2,22 @@ import { Color, ICard, IDeck, Type } from "../interfaces/IDeck";
 import { IHand } from "../interfaces/IHand";
 
 export interface Player {
-  name: string;
-  playerHand: ICard[];
-  score: number;
-  hasCalledUno: boolean;
-  isBot: boolean;
   _id: string;
-  playerId: string;
+  name: string;
   password: string;
-  gameId: string | "none" | null;
+  score: number;
+  isBot: boolean;
+  playerHand: ICard[];
+  game: IGame
 }
   
 export interface IGame {
-  players: Player[];
-  gameId: string;
-  currentHand: IHand | null;
+  _id: string;
+  players: Player[] | string[];
   winner?: Player;
   gameState: "waiting" | "in-progress" | "finished";
-
-  createGame(players: Player[], gameId: string): IGame;
-
-  joinGame(gameId: string,  player: Player): void;
-
-  startGame(gameId: string): void;
+  currentHand?: IHand | null;
+  hands?: IHand[] | string[];
 
   checkGameWinner(player: Player): boolean;
 

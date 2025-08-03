@@ -4,18 +4,13 @@ import PlayerModel from "../models/PlayerModel";
 import { removeGameFromPlayer } from "./PlayerService";
 
 export async function createGame() {
-  console.log("🟡 createGame called");
   const newGame = new GameModel({
     players: [],
-    gameId: Math.floor(Math.random() * 1000000).toString(),
     winner: null,
     gameState: "waiting",
     hands: [],
+    currentHand: null,
   });
-
-  console.log("🔵 Game document before save:", newGame);
-  console.log("Saving game:", JSON.stringify(newGame, null, 2));
-
   try {
     const savedGame = await newGame.save();
     console.log("🟢 Game successfully saved:", savedGame);
@@ -26,11 +21,9 @@ export async function createGame() {
   }
 }
 
-export async function joinGame(playerId: string, gameId: string) {
-  console.log(
-    `🟡 joinGame called with playerId: ${playerId}, gameId: ${gameId}`
-  );
-  const game = await GameModel.findOne({ gameId });
+export async function joinGame(playerId: string, _id: string) {
+
+  const game = await GameModel.findById({ _id });
   if (!game) {
     throw new Error("Game not found");
   }
@@ -41,9 +34,8 @@ export async function joinGame(playerId: string, gameId: string) {
   }
 
   if (
-    player.gameId !== "none" &&
-    player.gameId !== null &&
-    player.gameId !== gameId
+    player.game !== null &&
+    player.game !== game._id
   ) {
     console.error("Player is already in another game");
     throw new Error("Player is already in another game");
@@ -53,9 +45,9 @@ export async function joinGame(playerId: string, gameId: string) {
     return game;
   }
 
-  // Add player to game and update player's gameId
+  // Add player to game and update player's game
   game.players.push(player._id);
-  player.gameId = gameId;
+  player.game = game._id;
 
   await player.save();
   await game.save();
@@ -63,16 +55,16 @@ export async function joinGame(playerId: string, gameId: string) {
   return game;
 }
 
-export async function leaveGame(playerId: string, gameId: string) {
+export async function leaveGame(playerId: string, _id: string) {
   await removeGameFromPlayer(playerId);
-  const game = await GameModel.findOne({ gameId });
+  const game = await GameModel.findById({ _id });
   if (!game) {
     throw new Error("Game not found");
   }
   game.players = game.players.filter(
     (player) => player.toString() !== player._id.toString()
   );
-  console.log(`🟢 Player ${playerId} left game ${gameId}`);
+  console.log(`🟢 Player ${playerId} left game ${_id}`);
   await game.save();
 }
 
@@ -81,8 +73,8 @@ export async function getAllGames() {
   return games;
 }
 
-export async function getGameById(gameId: number) {
-  const game = await GameModel.findOne({ gameId }).populate("players");
+export async function getGameById(_id: string) {
+  const game = await GameModel.findOne({ _id }).populate("players");
   if (!game) {
     throw new Error("Game not found");
   }
@@ -96,6 +88,7 @@ export async function updateGame(
     gameState?: string;
     winner?: any;
     currentHand?: IHand;
+    hands?: any[];
   }>
 ) {
   const game = await GameModel.findOne({ gameId });
@@ -115,8 +108,8 @@ export async function updateGame(
   return game;
 }
 
-export async function getCurrentHand(gameId: string) {
-  const game = await GameModel.findOne({ gameId }).populate("currentHand");
+export async function getCurrentHand(_id: string) {
+  const game = await GameModel.findById({ _id }).populate("currentHand");
   if (!game) {
     throw new Error("Game not found");
   }

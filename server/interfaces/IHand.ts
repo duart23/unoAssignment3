@@ -2,15 +2,14 @@ import { Color, ICard, IDeck, Type } from "../interfaces/IDeck";
 import { IGame, Player} from "../interfaces/IGame";    
 
 export interface IHand {
+  _id: string; // Reference to the game this hand belongs to
   currentPlayerIndex: number;
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1 ; // 1 for clockwise, -1 for counter-clockwise
   winner? : string;
   score?: number;
-  gameId: string;
-  _id: string; // Reference to the game this hand belongs to
-  game: IGame;
+  game: IGame | string; // Reference to the game this hand belongs to
   players: Player[];
 
   // Starts a new Hand with the given players
