@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
 
 export const PlayerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   score: { type: Number, default: 0 },
   isBot: { type: Boolean, default: false },
-  playerHand: { type: Array, default: [] },
   game: { type: mongoose.Schema.Types.ObjectId, ref: "Game", default: null, required: false },
 });
 

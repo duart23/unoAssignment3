@@ -7,9 +7,9 @@ const router = express.Router();
 router.post("/create", createGameHandler);
 router.post("/join", joinGameHandler);
 router.get("/", getAllGamesHandler);
-router.get("/:gameId", getGameByIdHandler);
-router.put("/updateGame/:gameId", updateGameHandler);
+router.get("/:_id", getGameByIdHandler);
+router.put("/updateGame/:_id", updateGameHandler);
 router.put("/leave", leaveGameHandler);
-router.get("/currentHand/:gameId", getCurrentHandHandler);
+router.get("/currentHand/:_id", getCurrentHandHandler);
 
 export default router;

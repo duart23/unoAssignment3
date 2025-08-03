@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { apiGetCurrentHand } from "@/api/useGameApi";
 import { apiGetHandById, apiUpdateHand } from "@/api/useHandApi";
-import { apiUpdatePlayer } from "@/api/usePlayerApi";
+import { apiGetAllPlayersFromGame, apiGetPlayerById, apiUpdatePlayer } from "@/api/usePlayerApi";
 import PlayerHand from "@/components/PlayerHand.vue";
 import UnoCard from "@/components/UnoCard.vue";
 import { ICard, Type, Color } from "@/interfaces/IDeck";
+import { Player } from "@/interfaces/IGame";
 import { Deck } from "@/model/Deck";
 import { Hand } from "@/model/Hand";
 import { router } from "@/router";
 import { useGameStore } from "@/stores/gameStore";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useSocketStore } from "@/stores/socketStore";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const gameStore = useGameStore();
@@ -20,29 +21,51 @@ const socketStore = useSocketStore();
 
 const route = useRoute();
 
+const topCard = computed(() => {
+  const discardPile = gameStore.currentGame?.currentHand?.discardPile;
+  if (discardPile && discardPile.length > 0) {
+    return discardPile[discardPile.length - 1];
+  }
+  return null;
+});
+
+const currentPlayer = computed(() => {
+  return playerStore.players[gameStore.currentGame?.currentHand?.currentPlayerIndex ?? 0] || null;
+});
 
 onMounted(async () => {
-  const handId = route.params._id.toString();
+  const _id = route.params._id.toString();
   if (!gameStore.currentGame) {
     console.error("No current game found");
     return;
   }
-  if (!handId) {
+  if (!_id) {
     console.error("No current hand found");
     return;
   }
-  const hand = await apiGetHandById(handId);
+  const hand = await apiGetHandById(_id);
   if (!hand) {
     console.error("Hand not found");
     return;
   }
+  gameStore.currentGame.currentHand = new Hand(hand);
 
-  gameStore.currentGame.currentHand = hand;
+  const player = await apiGetPlayerById(playerStore.player._id);
+  if (!player) {
+    console.error("Player not found");
+    return;
+  }
+  playerStore.player = player;
+
+  const players = await apiGetAllPlayersFromGame(player.game._id);
+  playerStore.players = players;
 });
+
 
 const openPickColor = ref(false);
 const cardToPickColor = ref<ICard | null>(null);
 const waitingForColor = ref(false);
+
 
 function drawCard() {
   if (!gameStore.currentGame?.currentHand) return;
@@ -63,6 +86,10 @@ function chooseColor(card: ICard | null, color: Color) {
   cardToPickColor.value = null;
   waitingForColor.value = false;
   gameStore.currentGame.currentHand.nextPlayer();
+}
+
+function getPlayerById(_id: string){
+  return playerStore.players.find((p: Player) => p._id === _id) || null;
 }
 
 function playCard(card: ICard) {
@@ -127,30 +154,24 @@ function getPositionClass(index: number): string {
 <template>
   <div v-if="gameStore.currentGame?.currentHand">
     <PlayerHand
-      :player="playerStore.player"
-      :cards="playerStore.player.playerHand"
-      :disabled="waitingForColor"
-      @playCard="playCard"
-    />
+  v-for="(cards, playerId) in gameStore.currentGame.currentHand.playersHands"
+  :key="playerId"
+  :cards="cards"
+  :player="getPlayerById(playerId)"
+  :disabled="waitingForColor"
+  @playCard="playCard"
+/>
+
 
     <div class="gameState">
       <div class="gameCenter">
         <div class="discardPile">
-          <UnoCard
-            v-if="
-              gameStore.currentGame?.currentHand?.discardPile[
-                gameStore.currentGame.currentHand.discardPile.length - 1
-              ]
-            "
-            :card="
-              gameStore.currentGame?.currentHand?.discardPile[
-                gameStore.currentGame.currentHand.discardPile.length - 1
-              ]
-            "
-          />
+          <UnoCard v-if="topCard" :card="topCard" />
         </div>
         <img
-          v-if="gameStore.currentGame?.currentHand?.deck?.cards?.length > 0"
+          v-if="
+            (gameStore.currentGame?.currentHand?.deck?.cards?.length ?? 0) > 0
+          "
           src="@/assets/uno-back.png"
           alt="Draw Pile"
           class="drawPileImage"
@@ -159,9 +180,7 @@ function getPositionClass(index: number): string {
       <div class="currentPlayer">
         Current Player:
         {{
-          gameStore.currentGame.currentHand.players[
-            gameStore.currentGame.currentHand.currentPlayerIndex
-          ].name
+          currentPlayer.name
         }}
       </div>
       <div class="gameActions">

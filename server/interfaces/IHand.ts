@@ -11,6 +11,7 @@ export interface IHand {
   score?: number;
   game: IGame | string; // Reference to the game this hand belongs to
   players: Player[];
+  playersHands: Map<string, ICard[]>; 
 
   // Starts a new Hand with the given players
   startHand(): void;
@@ -29,15 +30,10 @@ export interface IHand {
   calculateTotalPlayerScore(player: Player): void;
 
   // Draws a card for the current player
-  drawCard(palyer: Player): void;
+  drawCard(player: Player): void;
   
   penaltyDraw(player: Player): void;
 
-  callUno(player: Player): void;
-
-  checkUno(player: Player): void;
-
- // botTakeTurn(): void;
-
+  getHand(playerID: string): ICard[];
 
 }

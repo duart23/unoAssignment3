@@ -9,7 +9,7 @@ import Register from '@/pages/Register.vue';
 
 const routes = [
   { path: '/game-menu', component: GameMenu },
-  {  path: '/game/:gameId', name: 'Game', component: Game },
+  {  path: '/game/:_id', name: 'Game', component: Game },
   { path: '/play-hand/:_id', name: 'PlayHand', component: PlayHand },
   { path: '/game-over', component: GameOver },
   { path: '/', component: Login },

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IGame, Player } from "@/interfaces/IGame";
+import { Player } from "@/interfaces/IGame";
 
 const API_BASE = "/api/players";
 
@@ -13,12 +13,17 @@ export async function apiLoginPlayer(name: string, password: string): Promise<Pl
   return response.data;
 }
 
-export async function apiUpdatePlayer(playerId: string, updates: Partial<Player>): Promise<Player> {
-  const response = await axios.put(`${API_BASE}/updatePlayer/${playerId}`, updates);
+export async function apiUpdatePlayer(_id: string, updates: Partial<Player>): Promise<Player> {
+  const response = await axios.put(`${API_BASE}/updatePlayer/${_id}`, updates);
   return response.data;
 }
 
-export async function apiGetPlayerById(playerId: string): Promise<Player | null> {
-  const response = await axios.get(`${API_BASE}/${playerId}`);
+export async function apiGetPlayerById(_id: string): Promise<Player> {
+  const response = await axios.get(`${API_BASE}/${_id}`);
+  return response.data;
+}
+
+export async function apiGetAllPlayersFromGame(gameId: string): Promise<Player[]> {
+  const response = await axios.get(`${API_BASE}/game/${gameId}`);
   return response.data;
 }

@@ -1,8 +1,5 @@
-import { apiCreateGame, apiJoinGame, apiGetGameById } from "@/api/useGameApi";
-import { IGame, Player } from "@/interfaces/IGame";
-import { IHand } from "@/interfaces/IHand";
+import { IGame, Player } from "../interfaces/IGame";
 import { defineStore } from "pinia";
-import { usePlayerStore } from "./playerStore";
 
 export const useGameStore = defineStore("game", {
   state: () => ({
@@ -19,12 +16,19 @@ export const useGameStore = defineStore("game", {
       this.winner = game.winner;
     },
 
-    startNewHand(players: Player[]) {
+    startNewHand() {
       if (this.currentGame && this.currentGame.currentHand) {
         this.currentGame.currentHand.startHand();
         console.log("New hand started:", this.currentGame.currentHand);
       }
     },
+
+    reset() {
+      this.currentGame = null;
+      this.players = [];
+      this.winner = undefined;
+      this.isGameOver = false;
+    }
   },
    persist: true,
 });

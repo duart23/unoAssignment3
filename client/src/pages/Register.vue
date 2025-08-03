@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { usePlayerStore } from "@/stores/playerStore";
 import { ref } from "vue";
-import { apiCreatePlayer, apiLoginPlayer } from "@/api/usePlayerApi";
+import { apiCreatePlayer} from "@/api/usePlayerApi";
 import { useRouter } from "vue-router";
 
 const name = ref("");
@@ -10,9 +9,7 @@ const error = ref("");
 
 const router = useRouter();
 
-const playerStore = usePlayerStore();
-
-async function handleLogin() {
+async function handleRegister() {
   const player = await apiCreatePlayer(name.value, password.value);
   if (player) {
     console.log("Registered player:", player);
@@ -24,7 +21,7 @@ async function handleLogin() {
 
 <template>
   <div class="login-container">
-    <form @submit.prevent="handleLogin" class="login-form">
+    <form @submit.prevent="handleRegister" class="login-form">
       <h2>Register</h2>
       <div class="form-group">
         <label for="name">Name:</label>

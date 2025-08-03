@@ -21,14 +21,14 @@ export async function createGame() {
   }
 }
 
-export async function joinGame(playerId: string, _id: string) {
+export async function joinGame(_id: string, playerId: string) {
 
-  const game = await GameModel.findById({ _id });
+  const game = await GameModel.findById({ _id }).populate("players");
   if (!game) {
     throw new Error("Game not found");
   }
 
-  const player = await PlayerModel.findOne({ playerId });
+  const player = await PlayerModel.findOne({ _id: playerId });
   if (!player) {
     throw new Error("Player not found");
   }
@@ -55,7 +55,7 @@ export async function joinGame(playerId: string, _id: string) {
   return game;
 }
 
-export async function leaveGame(playerId: string, _id: string) {
+export async function leaveGame(_id: string, playerId: string) {
   await removeGameFromPlayer(playerId);
   const game = await GameModel.findById({ _id });
   if (!game) {
@@ -64,7 +64,7 @@ export async function leaveGame(playerId: string, _id: string) {
   game.players = game.players.filter(
     (player) => player.toString() !== player._id.toString()
   );
-  console.log(`🟢 Player ${playerId} left game ${_id}`);
+  console.log(`🟢 Player ${_id} left game ${_id}`);
   await game.save();
 }
 
@@ -74,7 +74,7 @@ export async function getAllGames() {
 }
 
 export async function getGameById(_id: string) {
-  const game = await GameModel.findOne({ _id }).populate("players");
+  const game = await GameModel.findById({ _id }).populate("players");
   if (!game) {
     throw new Error("Game not found");
   }
@@ -82,7 +82,7 @@ export async function getGameById(_id: string) {
 }
 
 export async function updateGame(
-  gameId: string,
+  _id: string,
   updates: Partial<{
     players?: any[];
     gameState?: string;
@@ -91,9 +91,9 @@ export async function updateGame(
     hands?: any[];
   }>
 ) {
-  const game = await GameModel.findOne({ gameId });
+  const game = await GameModel.findOne({ _id });
   if (!game) {
-    console.error("🚫 Game not found with ID:", gameId);
+    console.error("🚫 Game not found with ID:", _id);
     throw new Error("Game not found");
   }
   Object.assign(game, updates);
@@ -118,4 +118,5 @@ export async function getCurrentHand(_id: string) {
   }
   return game.currentHand;
 }
+
 

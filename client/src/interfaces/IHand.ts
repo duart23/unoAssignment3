@@ -2,16 +2,16 @@ import { Color, ICard, IDeck, Type } from "../interfaces/IDeck";
 import { IGame, Player} from "../interfaces/IGame";    
 
 export interface IHand {
+  _id: string; // Reference to the game this hand belongs to
   currentPlayerIndex: number;
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1 ; // 1 for clockwise, -1 for counter-clockwise
   winner? : string;
   score?: number;
-  gameId: string;
-  _id: string; // Reference to the game this hand belongs to
-  game: IGame;
+  game: IGame | string; // Reference to the game this hand belongs to
   players: Player[];
+  playersHands: Record<string, ICard[]>; // Map of player IDs to their hands
 
   // Starts a new Hand with the given players
   startHand(): void;
@@ -30,15 +30,10 @@ export interface IHand {
   calculateTotalPlayerScore(player: Player): void;
 
   // Draws a card for the current player
-  drawCard(palyer: Player): void;
+  drawCard(player: Player): void;
   
   penaltyDraw(player: Player): void;
 
-  callUno(player: Player): void;
-
-  checkUno(player: Player): void;
-
- // botTakeTurn(): void;
-
+  getHand(playerID: string): ICard[];
 
 }

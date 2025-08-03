@@ -5,8 +5,8 @@ import GameModel from "../models/GameModel";
 import HandModel from "../models/HandModel";
 
 
-export async function createHand(gameId: string) {
-  const game = await GameModel.findById({ _id: gameId });
+export async function createHand(_id: string) {
+  const game = await GameModel.findById({ _id: _id });
   if (!game) throw new Error("Game not found");
 
   const hand = new HandModel({
@@ -18,6 +18,7 @@ export async function createHand(gameId: string) {
     score: 0,
     game: game._id,
     players: game.players,
+    playersHands: {},
   });
 
   // Save hand and attach it to the game
@@ -28,17 +29,17 @@ export async function createHand(gameId: string) {
   return hand;
 }
 
-export async function getHandById(handId: string) {
-  const hand = await HandModel.findOne({ _id: handId });
+export async function getHandById(_id: string) {
+  const hand = await HandModel.findOne({ _id: _id });
   if (!hand) throw new Error("Hand not found");
   return hand;
 }
 
 export async function updateHand(
-  handId: string,
+  _id: string,
   updates: IHand
 ) {
-  const hand = await HandModel.findOne({ _id: handId });
+  const hand = await HandModel.findOne({ _id: _id });
   if (!hand) throw new Error("Hand not found");
 
   Object.assign(hand, updates);

@@ -4,28 +4,28 @@ import { IGame, Player } from "../interfaces/IGame";
 import { Deck } from "./Deck";
 
 export class Hand implements IHand {
+  _id: string;
   currentPlayerIndex: number;
   deck: IDeck;
   discardPile: ICard[];
   direction: 1 | -1;
-  gameId: string;
-  game: IGame;
+  game: IGame | string;
   winner?: string;
   score?: number;
-  _id: string;
   players: Player[];
+  playersHands: Record<string, ICard[]>;
 
   constructor(hand: Hand) {
     this.currentPlayerIndex = hand.currentPlayerIndex;
     this.deck = hand.deck;
     this.discardPile = hand.discardPile;
     this.direction = hand.direction;
-    this.gameId = hand.gameId;
     this.game = hand.game;
     this.winner = hand.winner;
     this.score = hand.score;
     this._id = hand._id;
     this.players = hand.players;
+    this.playersHands = { ...hand.playersHands };
   }
 
   startHand(): void {
@@ -33,12 +33,6 @@ export class Hand implements IHand {
     this.deck.initializeDeck();
     this.deck.shuffleDeck();
     this.direction = 1;
-
-    for (let i = 0; i < 7; i++) {
-      this.players.forEach((player) => {
-        player.playerHand?.push(this.deck.dealCard());
-      });
-    }
 
     //First card on the discard pile
     do {
@@ -54,11 +48,12 @@ export class Hand implements IHand {
       this.discardPile[0].type === Type.WILD_DRAW_FOUR
     );
 
-    this.currentPlayerIndex = Math.floor(Math.random() * (this.players.length ?? 0));
+    this.currentPlayerIndex = Math.floor(
+      Math.random() * (this.players.length ?? 0)
+    );
   }
 
   playCard(card: ICard, player: Player, chosenColor?: Color): boolean {
-
     if (
       this.currentPlayerIndex !==
       this.players.findIndex((p) => p.name === player.name)
@@ -82,7 +77,8 @@ export class Hand implements IHand {
       (card.type === Type.SKIP && topCard.type === Type.SKIP)
     ) {
       this.discardPile.push(card);
-      player.playerHand = player.playerHand?.filter((c) => c !== card);
+      const hand = this.playersHands[player._id];
+      this.playersHands[player._id] = hand.filter((c) => c !== card);
     } else {
       return false;
     }
@@ -106,7 +102,7 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 2; i++) {
-        if(!nextPlayer) {
+        if (!nextPlayer) {
           throw new Error("Next player not found");
         }
         this.penaltyDraw(nextPlayer);
@@ -127,7 +123,7 @@ export class Hand implements IHand {
             this.players.length
         ];
       for (let i = 0; i < 4; i++) {
-        if(!nextPlayer) {
+        if (!nextPlayer) {
           throw new Error("Next player not found");
         }
         this.penaltyDraw(nextPlayer);
@@ -155,18 +151,29 @@ export class Hand implements IHand {
     ) {
       throw new Error("It's not your turn!");
     } else {
-      player.playerHand?.push(this.deck.dealCard());
+      const hand = this.playersHands[player._id] ?? [];
+      const card = this.deck.dealCard();
+      if (card) {
+        hand.push(card);
+        this.playersHands[player._id] = hand;
+      }
     }
   }
 
   penaltyDraw(player: Player): void {
-    player.playerHand?.push(this.deck.dealCard());
+    const hand = this.playersHands[player._id] ?? [];
+    const card = this.deck.dealCard();
+    if (card) {
+      hand.push(card);
+      this.playersHands[player._id] = hand;
+    }
   }
 
   // Calculate the score of a player's hand
   calculatePlayerHandScore(player: Player): number {
     let totalScore = 0;
-    player.playerHand?.forEach((card) => {
+    const playerhand = this.playersHands[player._id] ?? [];
+    playerhand.forEach((card) => {
       if (!!card.value && card.type === Type.NUMBER) {
         totalScore += card.value;
       } else if (
@@ -191,7 +198,8 @@ export class Hand implements IHand {
 
     let newScore = player.score || 0;
     this.players.forEach((p) => {
-      if (p.playerHand?.length === 0) return;
+      const hand = this.playersHands[p._id] ?? [];
+      if (hand.length === 0) return;
       newScore += this.calculatePlayerHandScore(p);
       console.log(newScore);
     });
@@ -199,25 +207,8 @@ export class Hand implements IHand {
     player.score = newScore;
   }
 
-  callUno(player: Player): void {
-    if (!player.playerHand) return;
-    if (
-      this.currentPlayerIndex !==
-      this.players.findIndex((p) => p.name === player.name)
-    ) {
-      throw new Error("It's not your turn to call Uno!");
-    } else if (player.playerHand.length > 2) {
-      throw new Error("You cannot call Uno with more than 2 cards in hand!");
-    } else player.hasCalledUno = true;
-  }
-
-  checkUno(player: Player): void {
-    if (!player.hasCalledUno) {
-      for (let i = 0; i < 4; i++) {
-        player.playerHand?.push(this.deck.dealCard());
-      }
-    }
-    player.hasCalledUno = false;
+  getHand(playerId: string): ICard[] {
+    return this.playersHands[playerId] ?? [];
   }
 
   // botTakeTurn(): void {

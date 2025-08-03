@@ -19,6 +19,7 @@ function handlePlay(card: ICard) {
 
 <template>
   <div class="playerHand">
+    <h2>{{ player.name }}'s Hand</h2>
     <UnoCard
       v-for="(card, i) in cards"
       :key="i"

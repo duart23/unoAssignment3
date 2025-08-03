@@ -2,9 +2,8 @@
 import { onMounted, ref } from "vue";
 import { useGameStore } from "@/stores/gameStore";
 import { useRouter } from "vue-router";
-import type { IGame, Player } from "@/interfaces/IGame";
-import { Bot } from "@/model/Bot";
-import { apiCreateGame, apiGetAllGames, apiGetGameById, apiJoinGame } from "@/api/useGameApi";
+import type { IGame, Player } from "../interfaces/IGame";
+import { apiCreateGame, apiGetAllGames, apiJoinGame } from "@/api/useGameApi";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useSocketStore } from "@/stores/socketStore";
 
@@ -30,12 +29,12 @@ async function createGame() {
   }
 }
 
-async function joinGame(gameId: string) {
+async function joinGame(_id: string) {
   try {
-    const response = await apiJoinGame(playerStore.player.playerId, gameId);
-    if (response) {    
-      socketStore.joinGame(gameId, playerStore.player.playerId);
-      router.push(`/game/${gameId}`);
+    const response = await apiJoinGame(_id, playerStore.player._id);
+    if (response) {
+      socketStore.joinGame(_id, playerStore.player._id);
+      router.push(`/game/${_id}`);
     } else {
       alert("Failed to join game");
     }
@@ -61,8 +60,8 @@ onMounted(fetchGames);
   <h1>Welcome to UNO!</h1>
   <div class="gameMenu">
     <div class="gameList">
-      <div class="gameItem" v-for="game in listOfGames" :key="game.gameId">
-        <h2>{{ game.gameId }}</h2>
+      <div class="gameItem" v-for="game in listOfGames" :key="game._id">
+        <h2>{{ game._id }}</h2>
         <p>Players:</p>
         <ul>
           <li v-for="player in game.players" :key="player._id">
@@ -70,7 +69,7 @@ onMounted(fetchGames);
           </li>
         </ul>
         <p>Game State: {{ game.gameState }}</p>
-        <button @click="joinGame(game.gameId)">Join Game</button>
+        <button @click="joinGame(game._id)">Join Game</button>
       </div>
     </div>
     <!-- <select v-model="nrOfBots">
@@ -84,7 +83,7 @@ onMounted(fetchGames);
       <div class="playerInfo">
         <h2>Player Info</h2>
         <p>Name: {{ playerStore.player.name }}</p>
-        <p>Player ID: {{ playerStore.player.playerId }}</p>
+        <p>Player ID: {{ playerStore.player._id}}</p>
       </div>
       <button @click="fetchGames">Refresh Games</button>
       <button @click="createGame">Create Game</button>

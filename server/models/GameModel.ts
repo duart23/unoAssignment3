@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { HandSchema } from "./HandModel";
 
 const GameSchema = new mongoose.Schema(
   {

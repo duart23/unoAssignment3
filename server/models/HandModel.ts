@@ -14,6 +14,11 @@ export const HandSchema = new mongoose.Schema({
   score: { type: Number, default: 0 },
   game: { type: mongoose.Schema.Types.ObjectId, ref: "Game", default: null },
   players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
+  playersHands: {
+    type: Map,
+    of: [Object],
+    default: {},
+  },
 });
 
 const HandModel = mongoose.model("Hand", HandSchema);

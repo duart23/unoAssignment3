@@ -7,7 +7,6 @@ export interface Player {
   password: string;
   score: number;
   isBot: boolean;
-  playerHand: ICard[];
   game: IGame
 }
   
@@ -17,9 +16,8 @@ export interface IGame {
   winner?: Player;
   gameState: "waiting" | "in-progress" | "finished";
   currentHand?: IHand | null;
-  hands?: IHand[];
+  hands?: IHand[] | string[];
 
   checkGameWinner(player: Player): boolean;
 
-  endHand(winningPlayer: Player): boolean;
 }

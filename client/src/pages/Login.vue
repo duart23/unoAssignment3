@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { apiLoginPlayer } from "@/api/usePlayerApi";
 import { useRouter } from "vue-router";
 import { useSocketStore } from "@/stores/socketStore";
+import { useGameStore } from "@/stores/gameStore";
 
 
 const name = ref("");
@@ -13,15 +14,17 @@ const error = ref("");
 const router = useRouter();
 const socketStore = useSocketStore();
 const playerStore = usePlayerStore();
+const gameStore = useGameStore();
 
 async function handleLogin() {
   const player = await apiLoginPlayer(name.value, password.value);
   if (!player) return;
 
   playerStore.setPlayer(player);
-  socketStore.connect(player.playerId);
+  socketStore.connect(player._id);
+  gameStore.reset();
 
-  router.push("/game-menu");
+  router.push("/game-menu");``
 }
 </script>
 

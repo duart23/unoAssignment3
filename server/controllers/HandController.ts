@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 
 
 export async function createHandHandler(req: Request, res: Response) {
-  const { gameId } = req.body;
+  const { _id } = req.body;
   try {
-    const hand = await createHand(gameId);
+    const hand = await createHand(_id);
     res.status(201).json(hand);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -15,9 +15,9 @@ export async function createHandHandler(req: Request, res: Response) {
 }
 
 export async function getHandByIdHandler(req: Request, res: Response) {
-  const { handId } = req.params;
+  const { _id } = req.params;
   try {
-    const hand = await getHandById(handId);
+    const hand = await getHandById(_id);
     res.status(200).json(hand);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -26,10 +26,10 @@ export async function getHandByIdHandler(req: Request, res: Response) {
 }
 
 export async function updateHandHandler(req: Request, res: Response) {
-  const { handId } = req.params;
+  const { _id } = req.params;
   const updates = req.body;
   try {
-    const updatedHand = await updateHand(handId, updates);
+    const updatedHand = await updateHand(_id, updates);
     res.status(200).json(updatedHand);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

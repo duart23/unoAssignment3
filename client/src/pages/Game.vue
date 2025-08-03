@@ -6,15 +6,17 @@ import {
   apiUpdateGame,
 } from "@/api/useGameApi";
 import { apiCreateHand, apiGetHandById, apiUpdateHand } from "@/api/useHandApi";
-import { apiGetPlayerById, apiUpdatePlayer } from "@/api/usePlayerApi";
-import { IGame, Player } from "@/interfaces/IGame";
-import { IHand } from "@/interfaces/IHand";
-import { Hand } from "@/model/Hand";
+import { apiGetAllPlayersFromGame, apiGetPlayerById, apiUpdatePlayer } from "@/api/usePlayerApi";
+import { IGame, Player } from "../interfaces/IGame";
+import { IHand } from "../interfaces/IHand";
+import { Hand } from "../model/Hand";
 import { useGameStore } from "@/stores/gameStore";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useSocketStore } from "@/stores/socketStore";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import PlayerHand from "@/components/PlayerHand.vue";
+import { ICard } from "@/interfaces/IDeck";
 
 const gameStore = useGameStore();
 const playerStore = usePlayerStore();
@@ -22,27 +24,29 @@ const socketStore = useSocketStore();
 const router = useRouter();
 const route = useRoute();
 
-const gameId = route.params.gameId.toString();
-
+const gameId = route.params._id.toString();
 onMounted(async () => {
   if (!gameId) {
     console.error("No current game found");
     return;
   }
   try {
-    const game = await apiGetGameById(gameId as string);
+    const game = await apiGetGameById(gameId);
+    console.log("Fetched game:", game);
     gameStore.setCurrentGame(game);
+    playerStore.setGame(game);
     console.log("Current game set:", gameStore.currentGame);
   } catch (error) {
     console.error("Error fetching game:", error);
   }
 });
 
+
 async function leaveGame() {
   try {
-    await apiLeaveGame(playerStore.player.playerId, gameId);
-    socketStore.leaveGame(gameId, playerStore.player.playerId);
-    playerStore.setPlayer({ ...playerStore.player, gameId: "none" });
+    await apiLeaveGame(gameId, playerStore.player._id);
+    socketStore.leaveGame(gameId, playerStore.player._id);
+    playerStore.leaveGame();
     router.push("/game-menu");
   } catch (error) {
     console.error("Error leaving game:", error);
@@ -58,7 +62,7 @@ async function joinOnGoingHand() {
     gameStore.currentGame.gameState === "in-progress" &&
     gameStore.currentGame.currentHand
   ) {
-    const currentHand = await apiGetCurrentHand(gameStore.currentGame.gameId);
+    const currentHand = await apiGetCurrentHand(gameId);
     console.log("Current Hand:", currentHand);
     router.push(`/play-hand/${currentHand._id}`);
   } else {
@@ -66,80 +70,80 @@ async function joinOnGoingHand() {
   }
 }
 
-async function dealCardsToPlayers(hand: IHand) {
-  for (const _id of hand.players) {
-    const playerData = await apiGetPlayerById(_id); // ✅ use loop playerId
-    if (!playerData) continue;
+async function dealCardsToPlayers(hand: Hand) {
+  for (const player of hand.players) {
+    const playerId = typeof player === "string" ? player : player._id;
+    const cards: ICard[] = [];
 
     for (let i = 0; i < 7; i++) {
       const card = hand.deck.dealCard();
       if (card) {
-        playerData.playerHand.push(card);
+        cards.push(card);
       }
     }
 
-    await apiUpdatePlayer(playerId, playerData);
+    hand.playersHands[playerId] = cards;
+    console.log(`${playerId} was dealt:`, cards);
   }
-}
-
-
-async function startGame() {
-  const game = await apiGetGameById(gameId);
-  if (game.gameState === "in-progress") {
-    alert("Game is already in progress.");
-    return;
-  }
-
-  if (!gameStore.currentGame) {
-    throw new Error("No current game found");
-  }
-
-  if (gameStore.players.length < 2) {
-    throw new Error("At least two players are required to start the game.");
-  }
-
-  const newHand = await apiCreateHand(gameStore.currentGame.gameId);
-
-  const hand = new Hand(newHand);
-  hand.startHand();
-
-  await dealCardsToPlayers(hand);
 
   await apiUpdateHand(hand._id, hand);
+}
 
-  const updates: Partial<IGame> = {
-    gameState: "in-progress" as IGame["gameState"],
-    currentHand: hand,
-  };
+async function startGame() {
+  try {
+    const game = await apiGetGameById(gameId);
+    if (game.gameState === "in-progress") {
+      alert("Game is already in progress.");
+      return;
+    }
 
-  await apiUpdateGame(gameId, updates);
-  gameStore.setCurrentGame({
-    ...gameStore.currentGame,
-    gameState: "in-progress",
-    currentHand: newHand,
-  });
+    if (!gameStore.currentGame) {
+      throw new Error("No current game found");
+    }
 
-  socketStore.startHand(gameId);
+    if (gameStore.players.length < 2) {
+      throw new Error("At least two players are required to start the game.");
+    }
 
-  setTimeout(() => {
-    router.push(`/play-hand/${newHand._id}`);
-  }, 500);
+    const newHandData = await apiCreateHand(gameId);
+    const hand = new Hand(newHandData);
+    hand.startHand();
+
+    await dealCardsToPlayers(hand);
+
+    await apiUpdateHand(hand._id, hand);
+
+    const updates: Partial<IGame> = {
+      gameState: "in-progress",
+      currentHand: hand,
+    };
+
+    await apiUpdateGame(gameId, updates);
+
+    gameStore.setCurrentGame({
+      ...gameStore.currentGame,
+      gameState: "in-progress",
+      currentHand: hand,
+    });
+
+    socketStore.startHand(gameId);
+
+    router.push(`/play-hand/${hand._id}`);
+  } catch (error) {
+    console.error("Failed to start game:", error);
+    alert("Failed to start the game. Please try again.");
+  }
 }
 
 if (socketStore.socket) {
-  socketStore.socket.on("handStarted", async ({ handId }) => {
-    console.log("Hand started with ID:", handId);
-
-    if(!gameStore.currentGame) {
+  socketStore.socket.on("handStarted", async ({ _id }) => {
+    console.log("Hand started with ID:", _id);
+    if (!gameStore.currentGame) {
       console.error("No current game found");
       return;
     }
-    const currentHand = await apiGetCurrentHand(gameId);
-    gameStore.currentGame.currentHand = new Hand(currentHand);
-
-
     setTimeout(() => {
-      router.push(`/play-hand/${handId}`);
+      router.push(`/play-hand/${_id}`);
     }, 500);
   });
 }
@@ -147,8 +151,8 @@ if (socketStore.socket) {
 
 <template>
   <div class="gameSetupContainer">
-    <div class="gameId">
-      <h1>Game Id {{ gameStore.currentGame?.gameId }}</h1>
+    <div class="_id">
+      <h1>Game Id {{ gameId }}</h1>
     </div>
     <div class="gameSetup">
       <div>
@@ -196,7 +200,7 @@ if (socketStore.socket) {
   overflow-x: hidden;
 }
 
-.gameId {
+._id {
   display: flex;
   justify-content: center;
 }

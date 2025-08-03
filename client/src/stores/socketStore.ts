@@ -9,17 +9,17 @@ export const useSocketStore = defineStore("socket", {
   }),
 
   actions: {
-    connect(playerId: string) {
+    connect(_id: string) {
       if (!this.socket || !this.socket.connected) {
         this.socket = io("http://localhost:5000");
 
         this.socket.on("connect", () => {
           console.log("Socket connected:", this.socket?.id);
-          this.socket?.emit("login", { playerId });
+          this.socket?.emit("login", { _id });
         });
 
-        this.socket.on("loginSuccess", ({ playerId }) => {
-          console.log("✅ Login confirmed for:", playerId);
+        this.socket.on("loginSuccess", ({ _id }) => {
+          console.log("✅ Login confirmed for:", _id);
         });
 
         this.socket.on("disconnect", (reason) => {
@@ -31,23 +31,23 @@ export const useSocketStore = defineStore("socket", {
       this.socket?.disconnect();
       this.socket = null;
     },
-    joinGame(gameId: string, playerId: string) {
+    joinGame(_id: string, playerId: string) {
       if (this.socket) {
-        this.socket.emit("joinGame", { gameId, playerId });
+        this.socket.emit("joinGame", { _id, playerId });
       } else {
         console.error("Socket is not connected");
       }
     },
-    leaveGame(gameId: string, playerId: string) {
+    leaveGame(_id: string, playerId: string) {
       if (this.socket) {
-        this.socket.emit("leaveGame", { gameId, playerId });
+        this.socket.emit("leaveGame", { _id, playerId });
       } else {
         console.error("Socket is not connected");
       }
     },
-    startHand(gameId: string) {
+    startHand(_id: string) {
       if (this.socket) {
-        this.socket.emit("startHand", { gameId });
+        this.socket.emit("startHand", { _id });
       } else {
         console.error("Socket is not connected");
       }

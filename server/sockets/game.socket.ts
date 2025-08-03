@@ -9,58 +9,58 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     console.log(`Socket disconnected: ${socket.id}`);
   });
 
-  socket.on("login", ({ playerId }) => {
-    socket.data.playerId = playerId;
-    socket.join(playerId);
-    io.to(playerId).emit("loginSuccess", { playerId });
+  socket.on("login", ({ _id }) => {
+    socket.data._id = _id;
+    socket.join(_id);
+    io.to(_id).emit("loginSuccess", { _id });
   });
 
-  socket.on("joinGame", async ({ gameId, playerId }) => {
-    socket.join(gameId);
-    console.log(`Player ${playerId} joined game ${gameId}`);
+  socket.on("joinGame", async ({ _id, playerId }) => {
+    socket.join(_id);
+    console.log(`Player ${playerId} joined game ${_id}`);
     try {
       const player = await getPlayerById(playerId);
-      io.to(gameId).emit("playerJoined", { playerName: player?.name });
+      io.to(_id).emit("playerJoined", { playerName: player?.name });
     } catch (error) {
-      console.error(`Failed to get player info for ${playerId}:`, error);
+      console.error(`Failed to get player info for ${_id}:`, error);
     }
   });
 
-  socket.on("leaveGame", async ({ gameId, playerId }) => {
-    socket.leave(gameId);
-    console.log(`Player ${playerId} left game ${gameId}`);
+  socket.on("leaveGame", async ({ _id, playerId }) => {
+    socket.leave(_id);
+    console.log(`Player ${playerId} left game ${_id}`);
     try {
       const player = await getPlayerById(playerId);
-      io.to(gameId).emit("playerLeft", { playerName: player?.name });
+      io.to(_id).emit("playerLeft", { playerName: player?.name });
     } catch (error) {
-      console.error(`Failed to get player info for ${playerId}:`, error);
+      console.error(`Failed to get player info for ${_id}:`, error);
     }
   });
 
-  socket.on("startHand", async ({ gameId }) => {
-    console.log("Starting hand for game:", gameId);
+  socket.on("startHand", async ({ _id }) => {
+    console.log("Starting hand for game:", _id);
 
-    const game = await getGameById(gameId);
+    const game = await getGameById(_id);
     if (!game) {
-      console.error("Game not found for ID:", gameId);
+      console.error("Game not found for ID:", _id);
       return; // or emit an error event back to client
     }
 
-    const currentHand = await getCurrentHand(gameId);
-    io.to(gameId).emit("handStarted", { handId: currentHand._id });
+    const currentHand = await getCurrentHand(_id);
+    io.to(_id).emit("handStarted", { _id: currentHand._id });
   });
 
-  socket.on("playCard", ({ gameId, card, playerId }) => {
+  socket.on("playCard", ({ _id, card, playerId }) => {
     console.log(`${playerId} played`, card);
 
-    io.to(gameId).emit("gameUpdated", {
+    io.to(_id).emit("gameUpdated", {
       /* updated state here */
     });
   });
 
-  socket.on("drawCard", ({ gameId, playerId }) => {
+  socket.on("drawCard", ({ _id, playerId }) => {
     // Deal card to player
-    io.to(gameId).emit("cardDrawn", {
+    io.to(_id).emit("cardDrawn", {
       playerId,
       card: {
         /*...*/
@@ -68,13 +68,13 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     });
   });
 
-  socket.on("endGame", ({ gameId, winner }) => {
-    console.log(`Game ${gameId} ended. Winner: ${winner}`);
-    io.to(gameId).emit("gameEnded", { winner });
+  socket.on("endGame", ({ _id, winner }) => {
+    console.log(`Game ${_id} ended. Winner: ${winner}`);
+    io.to(_id).emit("gameEnded", { winner });
   });
 
-  socket.on("gameUpdate", ({ gameId, update }) => {
-    console.log(`Game update for ${gameId}:`, update);
-    io.to(gameId).emit("gameUpdated", update);
+  socket.on("gameUpdate", ({ _id, update }) => {
+    console.log(`Game update for ${_id}:`, update);
+    io.to(_id).emit("gameUpdated", update);
   });
 }

@@ -4,7 +4,7 @@ import { createHandHandler, getHandByIdHandler, updateHandHandler } from "../con
 const router = express.Router();
 
 router.post("/create", createHandHandler);
-router.get("/:handId", getHandByIdHandler);
-router.put("/updateHand/:handId", updateHandHandler);
+router.get("/:_id", getHandByIdHandler);
+router.put("/updateHand/:_id", updateHandHandler);
 
 export default router;
